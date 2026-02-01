@@ -1,0 +1,66 @@
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { requireAdmin } from '../utils/permissions';
+
+export const deafenCommand = new SlashCommandBuilder()
+  .setName('deafen')
+  .setDescription('Заглушить пользователя в голосовом канале')
+  .addUserOption(option =>
+    option
+      .setName('user')
+      .setDescription('Пользователь')
+      .setRequired(true)
+  )
+  .addStringOption(option =>
+    option
+      .setName('reason')
+      .setDescription('Причина')
+      .setRequired(false)
+  )
+  .setDefaultMemberPermissions(PermissionFlagsBits.DeafenMembers);
+
+export async function handleDeafenCommand(
+  interaction: ChatInputCommandInteraction
+): Promise<void> {
+  if (!(await requireAdmin(interaction))) return;
+
+  const targetUser = interaction.options.getUser('user', true);
+  const reason = interaction.options.getString('reason') ?? 'Не указано';
+
+  const member = await interaction.guild?.members.fetch(targetUser.id).catch(() => null);
+
+  if (!member) {
+    await interaction.reply({ content: '❌ Пользователь не найден.', ephemeral: true });
+    return;
+  }
+
+  if (!member.voice.channel) {
+    await interaction.reply({ content: '❌ Пользователь не в голосовом канале.', ephemeral: true });
+    return;
+  }
+
+  if (member.voice.deaf) {
+    await interaction.reply({ content: '❌ Пользователь уже заглушен.', ephemeral: true });
+    return;
+  }
+
+  try {
+    await member.voice.setDeaf(true, reason);
+
+    const embed = new EmbedBuilder()
+      .setColor(0xFF0000)
+      .setTitle('🔇 Пользователь заглушен')
+      .addFields(
+        { name: '👤 Пользователь', value: targetUser.tag, inline: true },
+        { name: '🔊 Канал', value: member.voice.channel.name, inline: true },
+        { name: '📝 Причина', value: reason },
+        { name: '👮 Модератор', value: interaction.user.tag, inline: true }
+      )
+      .setThumbnail(targetUser.displayAvatarURL())
+      .setTimestamp();
+
+    await interaction.reply({ embeds: [embed] });
+  } catch (error) {
+    console.error('Failed to deafen user:', error);
+    await interaction.reply({ content: '❌ Не удалось заглушить пользователя.', ephemeral: true });
+  }
+}
