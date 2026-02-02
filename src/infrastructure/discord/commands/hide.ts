@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const hideCommand = new SlashCommandBuilder()
   .setName('hide')
@@ -41,7 +42,7 @@ export async function handleHideCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to hide channel:', error);
+    logCommandError("hide", error);
     await interaction.reply({ content: '❌ Не удалось скрыть канал.', ephemeral: true });
   }
 }

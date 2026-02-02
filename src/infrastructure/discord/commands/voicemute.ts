@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const voicemuteCommand = new SlashCommandBuilder()
   .setName('voicemute')
@@ -60,7 +61,7 @@ export async function handleVoicemuteCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to mute user:', error);
+    logCommandError("voicemute", error);
     await interaction.reply({ content: '❌ Не удалось замутить пользователя.', ephemeral: true });
   }
 }

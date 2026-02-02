@@ -1,6 +1,5 @@
 import {
   GameActivityData,
-  GameStats,
   UserGameStats,
   ServerGameStats,
   GameLeaderboardEntry,

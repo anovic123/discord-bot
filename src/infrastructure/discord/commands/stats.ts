@@ -36,7 +36,6 @@ export async function handleStatsCommand(
   const heapTotal = (memoryUsage.heapTotal / 1024 / 1024).toFixed(2);
   const rss = (memoryUsage.rss / 1024 / 1024).toFixed(2);
 
-  const cpuUsage = os.loadavg()[0].toFixed(2);
   const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
   const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
 

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const nickCommand = new SlashCommandBuilder()
   .setName('nick')
@@ -58,7 +59,7 @@ export async function handleNickCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to change nickname:', error);
+    logCommandError("nick", error);
     await interaction.reply({ content: '❌ Не удалось изменить никнейм.', ephemeral: true });
   }
 }

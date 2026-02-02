@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const bannerCommand = new SlashCommandBuilder()
   .setName('banner')
@@ -32,7 +33,7 @@ export async function handleBannerCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to fetch banner:', error);
+    logCommandError("banner", error);
     await interaction.reply({ content: '❌ Не удалось получить баннер.', ephemeral: true });
   }
 }

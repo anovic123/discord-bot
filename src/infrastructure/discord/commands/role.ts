@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const roleCommand = new SlashCommandBuilder()
   .setName('role')
@@ -90,7 +91,7 @@ export async function handleRoleCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to manage role:', error);
+    logCommandError("role", error);
     await interaction.reply({ content: '❌ Не удалось изменить роль пользователя.', ephemeral: true });
   }
 }

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const stealemojiCommand = new SlashCommandBuilder()
   .setName('stealemoji')
@@ -75,7 +76,7 @@ export async function handleStealemojiCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to create emoji:', error);
+    logCommandError("stealemoji", error);
     await interaction.reply({
       content: '❌ Не удалось добавить эмодзи. Проверьте ссылку и лимиты сервера.',
       ephemeral: true

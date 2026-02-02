@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 const DURATION_CHOICES = [
   { name: '60 секунд', value: 60 },
@@ -84,7 +85,7 @@ export async function handleTimeoutCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to timeout user:', error);
+    logCommandError("timeout", error);
     await interaction.reply({ content: '❌ Не удалось выдать тайм-аут.', ephemeral: true });
   }
 }

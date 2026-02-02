@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const membersCommand = new SlashCommandBuilder()
   .setName('members')
@@ -44,7 +45,7 @@ export async function handleMembersCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to fetch members:', error);
+    logCommandError("members", error);
     await interaction.editReply({ content: '❌ Не удалось получить статистику.' });
   }
 }

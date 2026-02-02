@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const purgeCommand = new SlashCommandBuilder()
   .setName('purge')
@@ -59,7 +60,7 @@ export async function handlePurgeCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to purge messages:', error);
+    logCommandError("purge", error);
     await interaction.editReply({ content: '❌ Не удалось удалить сообщения. Возможно, они старше 14 дней.' });
   }
 }

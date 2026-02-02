@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const setnickCommand = new SlashCommandBuilder()
   .setName('setnick')
@@ -39,7 +40,7 @@ export async function handleSetnickCommand(
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
   } catch (error) {
-    console.error('Failed to change nickname:', error);
+    logCommandError("setnick", error);
     await interaction.reply({ content: '❌ Не удалось изменить никнейм.', ephemeral: true });
   }
 }

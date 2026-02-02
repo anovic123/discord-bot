@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const voicekickCommand = new SlashCommandBuilder()
   .setName('voicekick')
@@ -57,7 +58,7 @@ export async function handleVoicekickCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to disconnect user:', error);
+    logCommandError("voicekick", error);
     await interaction.reply({ content: '❌ Не удалось отключить пользователя.', ephemeral: true });
   }
 }

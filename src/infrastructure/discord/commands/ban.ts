@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const banCommand = new SlashCommandBuilder()
   .setName('ban')
@@ -74,7 +75,7 @@ export async function handleBanCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to ban user:', error);
+    logCommandError('ban', error);
     await interaction.reply({ content: '❌ Не удалось забанить пользователя.', ephemeral: true });
   }
 }

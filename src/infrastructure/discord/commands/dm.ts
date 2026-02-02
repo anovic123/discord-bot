@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const dmCommand = new SlashCommandBuilder()
   .setName('dm')
@@ -42,7 +43,7 @@ export async function handleDmCommand(
     await targetUser.send({ embeds: [embed] });
     await interaction.reply({ content: `✅ Сообщение отправлено ${targetUser.tag}`, ephemeral: true });
   } catch (error) {
-    console.error('Failed to send DM:', error);
+    logCommandError("dm", error);
     await interaction.reply({ content: '❌ Не удалось отправить ЛС. Возможно, у пользователя закрыты ЛС.', ephemeral: true });
   }
 }

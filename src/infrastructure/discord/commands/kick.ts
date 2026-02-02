@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const kickCommand = new SlashCommandBuilder()
   .setName('kick')
@@ -60,7 +61,7 @@ export async function handleKickCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to kick user:', error);
+    logCommandError("kick", error);
     await interaction.reply({ content: '❌ Не удалось кикнуть пользователя.', ephemeral: true });
   }
 }

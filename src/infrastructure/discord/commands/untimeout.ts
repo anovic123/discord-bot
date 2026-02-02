@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const untimeoutCommand = new SlashCommandBuilder()
   .setName('untimeout')
@@ -55,7 +56,7 @@ export async function handleUntimeoutCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to remove timeout:', error);
+    logCommandError("untimeout", error);
     await interaction.reply({ content: '❌ Не удалось снять тайм-аут.', ephemeral: true });
   }
 }

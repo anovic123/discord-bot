@@ -43,7 +43,6 @@ export const ADMIN_COMMANDS: readonly string[] = [
   'stealemoji',
 ] as const;
 
-
 export function isAdminCommand(commandName: string): boolean {
   return ADMIN_COMMANDS.includes(commandName);
 }

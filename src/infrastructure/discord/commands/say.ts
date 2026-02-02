@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const sayCommand = new SlashCommandBuilder()
   .setName('say')
@@ -35,7 +36,7 @@ export async function handleSayCommand(
     await channel.send(message);
     await interaction.reply({ content: `✅ Сообщение отправлено в <#${channel.id}>`, ephemeral: true });
   } catch (error) {
-    console.error('Failed to send message:', error);
+    logCommandError("say", error);
     await interaction.reply({ content: '❌ Не удалось отправить сообщение.', ephemeral: true });
   }
 }

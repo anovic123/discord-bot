@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const invitesCommand = new SlashCommandBuilder()
   .setName('invites')
@@ -67,7 +68,7 @@ export async function handleInvitesCommand(
       await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   } catch (error) {
-    console.error('Failed to fetch invites:', error);
+    logCommandError("invites", error);
     await interaction.reply({ content: '❌ Не удалось получить инвайты.', ephemeral: true });
   }
 }

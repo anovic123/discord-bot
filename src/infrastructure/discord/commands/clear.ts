@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const clearCommand = new SlashCommandBuilder()
   .setName('clear')
@@ -53,7 +54,7 @@ export async function handleClearCommand(
 
     await interaction.editReply(response);
   } catch (error) {
-    console.error('Failed to clear messages:', error);
+    logCommandError("clear", error);
     await interaction.editReply('❌ Не удалось удалить сообщения.');
   }
 }

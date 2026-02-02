@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const embedCommand = new SlashCommandBuilder()
   .setName('embed')
@@ -87,7 +88,7 @@ export async function handleEmbedCommand(
     await channel.send({ embeds: [embed] });
     await interaction.reply({ content: `✅ Embed отправлен в <#${channel.id}>`, ephemeral: true });
   } catch (error) {
-    console.error('Failed to send embed:', error);
+    logCommandError("embed", error);
     await interaction.reply({ content: '❌ Не удалось отправить embed.', ephemeral: true });
   }
 }

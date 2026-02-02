@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ChannelType } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const serverInfoCommand = new SlashCommandBuilder()
   .setName('serverinfo')
@@ -103,7 +104,7 @@ export async function handleServerInfoCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to get server info:', error);
+    logCommandError("serverinfo", error);
     await interaction.editReply('❌ Не удалось получить информацию о сервере.');
   }
 }

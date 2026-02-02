@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 const languages: Record<string, string> = {
   uk: 'Украинский',
@@ -77,7 +78,7 @@ export async function handleTranslateCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Translation error:', error);
+    logCommandError("translate", error);
 
     const embed = new EmbedBuilder()
       .setColor(0xFF0000)

@@ -3,3 +3,6 @@ node_modules/
 *.log
 .idea/
 dist/
+coverage/
+game-activity.json
+audit-log.json

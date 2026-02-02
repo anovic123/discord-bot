@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const unbanCommand = new SlashCommandBuilder()
   .setName('unban')
@@ -51,7 +52,7 @@ export async function handleUnbanCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to unban user:', error);
+    logCommandError("unban", error);
     await interaction.reply({ content: '❌ Не удалось разбанить пользователя.', ephemeral: true });
   }
 }

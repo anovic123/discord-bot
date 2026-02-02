@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 const DURATION_CHOICES = [
   { name: 'Выключить', value: 0 },
@@ -59,7 +60,7 @@ export async function handleSlowmodeCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to set slowmode:', error);
+    logCommandError("slowmode", error);
     await interaction.reply({ content: '❌ Не удалось установить медленный режим.', ephemeral: true });
   }
 }

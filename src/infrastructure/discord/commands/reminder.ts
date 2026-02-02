@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const reminderCommand = new SlashCommandBuilder()
   .setName('reminder')
@@ -45,7 +46,7 @@ export async function handleReminderCommand(
     try {
       await interaction.followUp({ content: `${interaction.user}`, embeds: [reminderEmbed] });
     } catch (error) {
-      console.error('Failed to send reminder:', error);
+      logCommandError("reminder", error);
     }
   }, minutes * 60 * 1000);
 }

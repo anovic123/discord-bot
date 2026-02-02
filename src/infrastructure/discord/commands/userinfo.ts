@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const userInfoCommand = new SlashCommandBuilder()
   .setName('userinfo')
@@ -120,7 +121,7 @@ export async function handleUserInfoCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to get user info:', error);
+    logCommandError("userinfo", error);
     await interaction.editReply('❌ Не удалось получить информацию о пользователе.');
   }
 }

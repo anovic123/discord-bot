@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { CryptoProvider, CryptoRates } from '../../domain/crypto/types';
+import { rateLimiter } from '../rate-limiter';
 
 interface CoinGeckoPrice {
   usd: number;
@@ -15,8 +16,18 @@ interface CoinGeckoResponse {
 
 export class CoinGeckoClient implements CryptoProvider {
   private readonly apiUrl = 'https://api.coingecko.com/api/v3/simple/price';
+  private cache: CryptoRates | null = null;
+  private cacheTime = 0;
+  private readonly cacheTtl = 30000;
 
   async getRates(): Promise<CryptoRates> {
+    const now = Date.now();
+    if (this.cache && now - this.cacheTime < this.cacheTtl) {
+      return this.cache;
+    }
+
+    await rateLimiter.acquireOrWait('coingecko');
+
     const response = await axios.get<CoinGeckoResponse>(this.apiUrl, {
       params: {
         ids: 'bitcoin,ethereum,the-open-network',
@@ -27,7 +38,7 @@ export class CoinGeckoClient implements CryptoProvider {
 
     const data = response.data;
 
-    return {
+    this.cache = {
       btc: {
         symbol: 'BTC',
         name: 'Bitcoin',
@@ -51,5 +62,8 @@ export class CoinGeckoClient implements CryptoProvider {
       },
       updatedAt: new Date(),
     };
+    this.cacheTime = now;
+
+    return this.cache;
   }
 }

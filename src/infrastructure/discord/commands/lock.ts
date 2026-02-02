@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const lockCommand = new SlashCommandBuilder()
   .setName('lock')
@@ -41,7 +42,7 @@ export async function handleLockCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to lock channel:', error);
+    logCommandError("lock", error);
     await interaction.reply({ content: '❌ Не удалось заблокировать канал.', ephemeral: true });
   }
 }

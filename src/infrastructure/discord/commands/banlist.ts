@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const banlistCommand = new SlashCommandBuilder()
   .setName('banlist')
@@ -50,7 +51,7 @@ export async function handleBanlistCommand(
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
   } catch (error) {
-    console.error('Failed to fetch ban list:', error);
+    logCommandError("banlist", error);
     await interaction.reply({ content: '❌ Не удалось получить список банов.', ephemeral: true });
   }
 }

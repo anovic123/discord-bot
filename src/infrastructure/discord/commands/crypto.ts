@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { GetCryptoUseCase } from '../../../application/get-crypto.use-case';
+import { logCommandError } from '../utils/error-handler';
 
 export const cryptoCommand = new SlashCommandBuilder()
   .setName('crypto')
@@ -15,7 +16,7 @@ export async function handleCryptoCommand(
     const message = await getCryptoUseCase.execute();
     await interaction.editReply(message);
   } catch (error) {
-    console.error('Failed to get crypto rates:', error);
+    logCommandError("crypto", error);
     await interaction.editReply('❌ Не удалось получить курс криптовалют. Попробуйте позже.');
   }
 }

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const voiceunmuteCommand = new SlashCommandBuilder()
   .setName('voiceunmute')
@@ -52,7 +53,7 @@ export async function handleVoiceunmuteCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to unmute user:', error);
+    logCommandError("voiceunmute", error);
     await interaction.reply({ content: '❌ Не удалось размутить пользователя.', ephemeral: true });
   }
 }

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { GetRatesUseCase } from '../../../application/get-rates.use-case';
+import { logCommandError } from '../utils/error-handler';
 
 export const currencyCommand = new SlashCommandBuilder()
   .setName('currency')
@@ -15,7 +16,7 @@ export async function handleCurrencyCommand(
     const message = await getRatesUseCase.execute();
     await interaction.editReply(message);
   } catch (error) {
-    console.error('Failed to get rates:', error);
+    logCommandError("currency", error);
     await interaction.editReply('❌ Не удалось получить курсы валют. Попробуйте позже.');
   }
 }

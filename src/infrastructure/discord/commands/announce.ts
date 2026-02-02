@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const announceCommand = new SlashCommandBuilder()
   .setName('announce')
@@ -75,7 +76,7 @@ export async function handleAnnounceCommand(
       ephemeral: true
     });
   } catch (error) {
-    console.error('Failed to send announcement:', error);
+    logCommandError("announce", error);
     await interaction.reply({ content: '❌ Не удалось отправить объявление.', ephemeral: true });
   }
 }

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import { GameActivityUseCase } from '../../../application/game-activity.use-case';
+import { logCommandError } from '../utils/error-handler';
 
 export const gamestatsCommand = new SlashCommandBuilder()
   .setName('gamestats')
@@ -53,7 +54,7 @@ export async function handleGamestatsCommand(
         break;
     }
   } catch (error) {
-    console.error('Failed to get game stats:', error);
+    logCommandError("gamestats", error);
     await interaction.editReply('❌ Не удалось получить статистику.');
   }
 }

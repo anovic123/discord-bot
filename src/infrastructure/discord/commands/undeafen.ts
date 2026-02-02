@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const undeafenCommand = new SlashCommandBuilder()
   .setName('undeafen')
@@ -52,7 +53,7 @@ export async function handleUndeafenCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to undeafen user:', error);
+    logCommandError("undeafen", error);
     await interaction.reply({ content: '❌ Не удалось снять заглушку.', ephemeral: true });
   }
 }

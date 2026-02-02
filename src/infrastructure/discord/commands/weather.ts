@@ -1,4 +1,8 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
+import { createLogger } from '../../logger';
+
+const logger = createLogger('Weather');
 
 interface WeatherResponse {
   name: string;
@@ -46,13 +50,13 @@ export async function handleWeatherCommand(
 
   try {
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=uk`;
-    console.log('Weather API request:', url.replace(apiKey, '***'));
+    logger.debug('Weather API request', { city });
 
     const response = await fetch(url);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Weather API response error:', response.status, errorText);
+      logger.warn('Weather API error', { status: response.status, errorText });
       throw new Error('City not found');
     }
 
@@ -85,7 +89,7 @@ export async function handleWeatherCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Weather API error:', error);
+    logCommandError("weather", error);
 
     const embed = new EmbedBuilder()
       .setColor(0xFF0000)

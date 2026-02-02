@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { ConvertUseCase } from '../../../application/convert.use-case';
+import { logCommandError } from '../utils/error-handler';
 
 export const convertCommand = new SlashCommandBuilder()
   .setName('convert')
@@ -49,7 +50,7 @@ export async function handleConvertCommand(
     const message = await convertUseCase.execute(amount, from, to);
     await interaction.editReply(message);
   } catch (error) {
-    console.error('Failed to convert:', error);
+    logCommandError("convert", error);
     await interaction.editReply('❌ Не удалось выполнить конвертацию. Попробуйте позже.');
   }
 }

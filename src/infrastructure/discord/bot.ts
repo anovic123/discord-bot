@@ -1,6 +1,9 @@
 import { Client, GatewayIntentBits, TextChannel, REST, Routes, EmbedBuilder, ActivityType, Presence } from 'discord.js';
 import cron from 'node-cron';
 import { Config } from '../../config';
+import { createLogger } from '../logger';
+import { cooldownManager } from '../cooldown';
+import { auditLogger } from '../audit';
 import { GetRatesUseCase } from '../../application/get-rates.use-case';
 import { GetCryptoUseCase } from '../../application/get-crypto.use-case';
 import { ConvertUseCase } from '../../application/convert.use-case';
@@ -86,6 +89,16 @@ interface UseCases {
   gameActivity: GameActivityUseCase;
 }
 
+const logger = createLogger('Bot');
+
+const MODERATION_COMMANDS = new Set([
+  'ban', 'unban', 'kick', 'timeout', 'untimeout', 'warn',
+  'purge', 'clear', 'lock', 'unlock', 'hide', 'show',
+  'slowmode', 'slowoff', 'nick', 'nickname', 'setnick',
+  'role', 'voicekick', 'voicemute', 'voiceunmute',
+  'deafen', 'undeafen', 'moveall',
+]);
+
 export class DiscordBot {
   private client: Client;
 
@@ -116,7 +129,7 @@ export class DiscordBot {
 
   private setupEventHandlers(): void {
     this.client.once('ready', async () => {
-      console.log(`Bot started as ${this.client.user?.tag}`);
+      logger.info(`Bot started as ${this.client.user?.tag}`);
       await this.registerCommands();
       this.startCronJob();
       await this.sendStartupMessage();
@@ -125,7 +138,31 @@ export class DiscordBot {
     this.client.on('interactionCreate', async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
 
+      const cooldownCheck = cooldownManager.check(interaction.user.id, interaction.commandName);
+      if (!cooldownCheck.allowed) {
+        const seconds = Math.ceil((cooldownCheck.remainingMs || 0) / 1000);
+        await interaction.reply({
+          content: `⏳ Подождите ${seconds} сек. перед повторным использованием команды.`,
+          ephemeral: true,
+        });
+        return;
+      }
+
       statsTracker.trackCommand(interaction.commandName);
+
+      if (MODERATION_COMMANDS.has(interaction.commandName)) {
+        const targetUser = interaction.options.getUser('user');
+        auditLogger.log({
+          action: interaction.commandName,
+          moderatorId: interaction.user.id,
+          moderatorTag: interaction.user.tag,
+          targetId: targetUser?.id,
+          targetTag: targetUser?.tag,
+          guildId: interaction.guildId || '',
+          channelId: interaction.channelId,
+          reason: interaction.options.getString('reason') || undefined,
+        });
+      }
 
       try {
       switch (interaction.commandName) {
@@ -348,7 +385,7 @@ export class DiscordBot {
       }
       } catch (error) {
         statsTracker.trackError();
-        console.error(`Command error [${interaction.commandName}]:`, error);
+        logger.error(`Command error [${interaction.commandName}]`, error);
       }
     });
 
@@ -473,9 +510,9 @@ export class DiscordBot {
         Routes.applicationGuildCommands(this.client.user!.id, this.config.guildId),
         { body: commands }
       );
-      console.log('Slash commands registered');
+      logger.info('Slash commands registered');
     } catch (error) {
-      console.error('Failed to register commands:', error);
+      logger.error('Failed to register commands', error);
     }
   }
 
@@ -483,7 +520,7 @@ export class DiscordBot {
     cron.schedule(this.config.cronTime, () => this.sendDailyRates(), {
       timezone: this.config.timezone,
     });
-    console.log(`Cron job started: ${this.config.cronTime} (${this.config.timezone})`);
+    logger.info(`Cron job started: ${this.config.cronTime} (${this.config.timezone})`);
   }
 
   private async sendDailyRates(): Promise<void> {
@@ -491,7 +528,7 @@ export class DiscordBot {
       const channel = await this.client.channels.fetch(this.config.channelId);
 
       if (!channel || !(channel instanceof TextChannel)) {
-        console.error('Channel not found or not a text channel');
+        logger.error('Channel not found or not a text channel');
         return;
       }
 
@@ -503,15 +540,15 @@ export class DiscordBot {
       await channel.send(currencyMessage);
       await channel.send(cryptoMessage);
 
-      console.log(`Daily rates sent at ${new Date().toLocaleTimeString('uk-UA')}`);
+      logger.info(`Daily rates sent at ${new Date().toLocaleTimeString('uk-UA')}`);
     } catch (error) {
-      console.error('Failed to send daily rates:', error);
+      logger.error('Failed to send daily rates', error);
     }
   }
 
   private async sendStartupMessage(): Promise<void> {
     if (!this.config.welcomeChannelId) {
-      console.log('Startup message skipped: WELCOME_CHANNEL_ID not set');
+      logger.debug('Startup message skipped: WELCOME_CHANNEL_ID not set');
       return;
     }
 
@@ -520,12 +557,12 @@ export class DiscordBot {
       try {
         channel = await this.client.channels.fetch(this.config.welcomeChannelId);
       } catch {
-        console.warn(`Startup message skipped: channel ${this.config.welcomeChannelId} not accessible`);
+        logger.warn(`Startup message skipped: channel ${this.config.welcomeChannelId} not accessible`);
         return;
       }
 
       if (!channel || !(channel instanceof TextChannel)) {
-        console.warn('Startup message skipped: channel is not a text channel');
+        logger.warn('Startup message skipped: channel is not a text channel');
         return;
       }
 
@@ -548,9 +585,9 @@ export class DiscordBot {
         .setTimestamp();
 
       await channel.send({ embeds: [embed] });
-      console.log('Startup message sent');
+      logger.info('Startup message sent');
     } catch (error) {
-      console.error('Failed to send startup message:', error);
+      logger.error('Failed to send startup message', error);
     }
   }
 }

@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel, EmbedBuilder } from 'discord.js';
+import { logCommandError } from '../utils/error-handler';
 
 export const firstmessageCommand = new SlashCommandBuilder()
   .setName('firstmessage')
@@ -51,7 +52,7 @@ export async function handleFirstmessageCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to fetch first message:', error);
+    logCommandError("firstmessage", error);
     await interaction.editReply({ content: '❌ Не удалось получить первое сообщение.' });
   }
 }

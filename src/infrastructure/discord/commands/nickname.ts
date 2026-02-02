@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
+import { logCommandError } from '../utils/error-handler';
 
 export const nicknameCommand = new SlashCommandBuilder()
   .setName('nickname')
@@ -54,7 +55,7 @@ export async function handleNicknameCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    console.error('Failed to reset nickname:', error);
+    logCommandError("nickname", error);
     await interaction.reply({ content: '❌ Не удалось сбросить никнейм.', ephemeral: true });
   }
 }
