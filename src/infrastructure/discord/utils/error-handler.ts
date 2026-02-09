@@ -19,7 +19,11 @@ export async function handleCommandError(
     } else {
       await interaction.reply({ content: message, ephemeral: true });
     }
-  } catch {}
+  } catch (e) {
+    logger.warn('Failed to send error response to interaction', {
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
 }
 
 export function logCommandError(commandName: string, error: unknown): void {

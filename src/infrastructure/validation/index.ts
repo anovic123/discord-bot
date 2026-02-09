@@ -3,7 +3,7 @@ import { z } from 'zod';
 export function sanitizeString(input: string): string {
   return input
     .replace(/[<>]/g, '')
-    .replace(/[\x00-\x1F\x7F]/g, '')
+    .replace(/[\u0000-\u001F\u007F]/g, '')
     .trim()
     .slice(0, 2000);
 }
