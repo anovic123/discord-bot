@@ -3,7 +3,8 @@ import { z } from 'zod';
 export function sanitizeString(input: string): string {
   return input
     .replace(/[<>]/g, '')
-    .replace(/[\u0000-\u001F\u007F]/g, '')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1F\x7F]/g, '')
     .trim()
     .slice(0, 2000);
 }
