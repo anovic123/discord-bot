@@ -23,13 +23,17 @@ class AuditLogger {
   private readonly maxBufferSize = 10;
 
   constructor(filePath?: string) {
-    this.filePath = filePath ?? path.join(process.cwd(), 'audit-log.json');
+    this.filePath = filePath ?? path.join(process.cwd(), 'data', 'audit-log.json');
     this.ensureFile();
   }
 
   private ensureFile(): void {
-    if (!fs.existsSync(this.filePath)) {
-      fs.writeFileSync(this.filePath, '[]');
+    try {
+      if (!fs.existsSync(this.filePath)) {
+        fs.writeFileSync(this.filePath, '[]');
+      }
+    } catch (error) {
+      logger.warn('Could not create audit log file, logging to memory only', error);
     }
   }
 
