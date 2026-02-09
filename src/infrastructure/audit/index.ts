@@ -33,7 +33,9 @@ class AuditLogger {
         fs.writeFileSync(this.filePath, '[]');
       }
     } catch (error) {
-      logger.warn('Could not create audit log file, logging to memory only', error);
+      logger.warn('Could not create audit log file, logging to memory only', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
