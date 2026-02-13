@@ -3,7 +3,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const base64Command = new SlashCommandBuilder()
   .setName('base64')
   .setDescription('Кодирование/декодирование Base64')
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('action')
       .setDescription('Действие')
@@ -13,16 +13,9 @@ export const base64Command = new SlashCommandBuilder()
         { name: 'Декодировать', value: 'decode' }
       )
   )
-  .addStringOption(option =>
-    option
-      .setName('text')
-      .setDescription('Текст')
-      .setRequired(true)
-  );
+  .addStringOption((option) => option.setName('text').setDescription('Текст').setRequired(true));
 
-export async function handleBase64Command(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleBase64Command(interaction: ChatInputCommandInteraction): Promise<void> {
   const action = interaction.options.getString('action', true);
   const text = interaction.options.getString('text', true);
 
@@ -44,7 +37,7 @@ export async function handleBase64Command(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(action === 'encode' ? '🔐 Base64 Кодирование' : '🔓 Base64 Декодирование')
     .addFields(
       { name: '📝 Вход', value: `\`\`\`${text.slice(0, 500)}\`\`\`` },

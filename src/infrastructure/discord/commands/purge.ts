@@ -1,17 +1,20 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const purgeCommand = new SlashCommandBuilder()
   .setName('purge')
   .setDescription('Удалить сообщения пользователя в канале')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addIntegerOption(option =>
+  .addIntegerOption((option) =>
     option
       .setName('amount')
       .setDescription('Количество сообщений для проверки (макс. 100)')
@@ -21,13 +24,14 @@ export const purgeCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
-export async function handlePurgeCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handlePurgeCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -38,17 +42,19 @@ export async function handlePurgeCommand(
 
   try {
     const messages = await interaction.channel.messages.fetch({ limit: amount });
-    const userMessages = messages.filter(m => m.author.id === targetUser.id);
+    const userMessages = messages.filter((m) => m.author.id === targetUser.id);
 
     if (userMessages.size === 0) {
-      await interaction.editReply({ content: `❌ Не найдено сообщений от ${targetUser.tag} среди последних ${amount} сообщений.` });
+      await interaction.editReply({
+        content: `❌ Не найдено сообщений от ${targetUser.tag} среди последних ${amount} сообщений.`,
+      });
       return;
     }
 
     const deleted = await interaction.channel.bulkDelete(userMessages, true);
 
     const embed = new EmbedBuilder()
-      .setColor(0xFF6600)
+      .setColor(0xff6600)
       .setTitle('🗑️ Сообщения удалены')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -60,7 +66,9 @@ export async function handlePurgeCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("purge", error);
-    await interaction.editReply({ content: '❌ Не удалось удалить сообщения. Возможно, они старше 14 дней.' });
+    logCommandError('purge', error);
+    await interaction.editReply({
+      content: '❌ Не удалось удалить сообщения. Возможно, они старше 14 дней.',
+    });
   }
 }

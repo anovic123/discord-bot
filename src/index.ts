@@ -3,11 +3,9 @@ import { createLogger } from './infrastructure/logger';
 import { startHealthServer, setHealthy } from './infrastructure/health';
 import { MonobankClient } from './infrastructure/monobank/client';
 import { CoinGeckoClient } from './infrastructure/coingecko/client';
-import { JsonGameActivityRepository } from './infrastructure/game-activity/repository';
 import { GetRatesUseCase } from './application/get-rates.use-case';
 import { GetCryptoUseCase } from './application/get-crypto.use-case';
 import { ConvertUseCase } from './application/convert.use-case';
-import { GameActivityUseCase } from './application/game-activity.use-case';
 import { DiscordBot } from './infrastructure/discord/bot';
 
 const logger = createLogger('Main');
@@ -17,18 +15,17 @@ const healthServer = startHealthServer(3000);
 
 const monobankClient = new MonobankClient();
 const coinGeckoClient = new CoinGeckoClient();
-const gameActivityRepository = new JsonGameActivityRepository();
 
 const useCases = {
   getRates: new GetRatesUseCase(monobankClient),
   getCrypto: new GetCryptoUseCase(coinGeckoClient),
   convert: new ConvertUseCase(monobankClient),
-  gameActivity: new GameActivityUseCase(gameActivityRepository),
 };
 
 const bot = new DiscordBot(config, useCases);
 
-bot.start()
+bot
+  .start()
   .then(() => logger.info('Connecting to Discord...'))
   .catch((error) => {
     logger.error('Connection failed', error);

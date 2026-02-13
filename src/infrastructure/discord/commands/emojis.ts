@@ -3,17 +3,11 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const emojisCommand = new SlashCommandBuilder()
   .setName('emojis')
   .setDescription('Показать список эмодзи сервера')
-  .addIntegerOption(option =>
-    option
-      .setName('page')
-      .setDescription('Страница')
-      .setRequired(false)
-      .setMinValue(1)
+  .addIntegerOption((option) =>
+    option.setName('page').setDescription('Страница').setRequired(false).setMinValue(1)
   );
 
-export async function handleEmojisCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleEmojisCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const page = interaction.options.getInteger('page') ?? 1;
   const perPage = 20;
 
@@ -24,8 +18,8 @@ export async function handleEmojisCommand(
     return;
   }
 
-  const staticEmojis = emojis.filter(e => !e.animated);
-  const animatedEmojis = emojis.filter(e => e.animated);
+  const staticEmojis = emojis.filter((e) => !e.animated);
+  const animatedEmojis = emojis.filter((e) => e.animated);
 
   const allEmojis = [...staticEmojis.values(), ...animatedEmojis.values()];
   const totalPages = Math.ceil(allEmojis.length / perPage);
@@ -34,10 +28,10 @@ export async function handleEmojisCommand(
   const end = start + perPage;
   const pageEmojis = allEmojis.slice(start, end);
 
-  const emojiList = pageEmojis.map(e => `${e} \`:${e.name}:\``).join('\n');
+  const emojiList = pageEmojis.map((e) => `${e} \`:${e.name}:\``).join('\n');
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`😀 Эмодзи сервера`)
     .setDescription(emojiList)
     .addFields(

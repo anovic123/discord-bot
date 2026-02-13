@@ -1,11 +1,16 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const clearCommand = new SlashCommandBuilder()
   .setName('clear')
   .setDescription('Удалить сообщения из канала')
-  .addIntegerOption(option =>
+  .addIntegerOption((option) =>
     option
       .setName('amount')
       .setDescription('Количество сообщений (1-100)')
@@ -13,7 +18,7 @@ export const clearCommand = new SlashCommandBuilder()
       .setMinValue(1)
       .setMaxValue(100)
   )
-  .addUserOption(option =>
+  .addUserOption((option) =>
     option
       .setName('user')
       .setDescription('Удалить только сообщения этого пользователя')
@@ -21,13 +26,14 @@ export const clearCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
-export async function handleClearCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleClearCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -40,11 +46,11 @@ export async function handleClearCommand(
     let messages = await interaction.channel.messages.fetch({ limit: amount });
 
     if (targetUser) {
-      messages = messages.filter(msg => msg.author.id === targetUser.id);
+      messages = messages.filter((msg) => msg.author.id === targetUser.id);
     }
 
     const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
-    messages = messages.filter(msg => msg.createdTimestamp > twoWeeksAgo);
+    messages = messages.filter((msg) => msg.createdTimestamp > twoWeeksAgo);
 
     const deleted = await interaction.channel.bulkDelete(messages, true);
 
@@ -54,7 +60,7 @@ export async function handleClearCommand(
 
     await interaction.editReply(response);
   } catch (error) {
-    logCommandError("clear", error);
+    logCommandError('clear', error);
     await interaction.editReply('❌ Не удалось удалить сообщения.');
   }
 }

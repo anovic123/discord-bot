@@ -72,9 +72,10 @@ class Logger {
   }
 
   error(message: string, error?: unknown, meta?: Record<string, unknown>): void {
-    const errorMeta = error instanceof Error
-      ? { error: error.message, stack: error.stack, ...meta }
-      : { error: String(error), ...meta };
+    const errorMeta =
+      error instanceof Error
+        ? { error: error.message, stack: error.stack, ...meta }
+        : { error: String(error), ...meta };
     this.log('error', message, errorMeta);
   }
 

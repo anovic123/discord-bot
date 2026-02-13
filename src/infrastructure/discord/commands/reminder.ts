@@ -4,16 +4,17 @@ import { logCommandError } from '../utils/error-handler';
 export const reminderCommand = new SlashCommandBuilder()
   .setName('reminder')
   .setDescription('Установить напоминание')
-  .addStringOption(option =>
-    option.setName('text')
-      .setDescription('Текст напоминания')
-      .setRequired(true))
-  .addIntegerOption(option =>
-    option.setName('minutes')
+  .addStringOption((option) =>
+    option.setName('text').setDescription('Текст напоминания').setRequired(true)
+  )
+  .addIntegerOption((option) =>
+    option
+      .setName('minutes')
       .setDescription('Через сколько минут напомнить')
       .setRequired(true)
       .setMinValue(1)
-      .setMaxValue(1440));
+      .setMaxValue(1440)
+  );
 
 export async function handleReminderCommand(
   interaction: ChatInputCommandInteraction
@@ -24,7 +25,7 @@ export async function handleReminderCommand(
   const reminderTime = new Date(Date.now() + minutes * 60 * 1000);
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('⏰ Напоминание установлено')
     .addFields(
       { name: '📝 Текст', value: text },
@@ -35,18 +36,21 @@ export async function handleReminderCommand(
 
   await interaction.reply({ embeds: [embed] });
 
-  setTimeout(async () => {
-    const reminderEmbed = new EmbedBuilder()
-      .setColor(0xFF9900)
-      .setTitle('🔔 Напоминание!')
-      .setDescription(text)
-      .addFields({ name: '👤 Для', value: `${interaction.user}` })
-      .setTimestamp();
+  setTimeout(
+    async () => {
+      const reminderEmbed = new EmbedBuilder()
+        .setColor(0xff9900)
+        .setTitle('🔔 Напоминание!')
+        .setDescription(text)
+        .addFields({ name: '👤 Для', value: `${interaction.user}` })
+        .setTimestamp();
 
-    try {
-      await interaction.followUp({ content: `${interaction.user}`, embeds: [reminderEmbed] });
-    } catch (error) {
-      logCommandError("reminder", error);
-    }
-  }, minutes * 60 * 1000);
+      try {
+        await interaction.followUp({ content: `${interaction.user}`, embeds: [reminderEmbed] });
+      } catch (error) {
+        logCommandError('reminder', error);
+      }
+    },
+    minutes * 60 * 1000
+  );
 }

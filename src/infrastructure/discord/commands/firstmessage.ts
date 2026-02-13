@@ -1,14 +1,16 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { logCommandError } from '../utils/error-handler';
 
 export const firstmessageCommand = new SlashCommandBuilder()
   .setName('firstmessage')
   .setDescription('Получить ссылку на первое сообщение в канале')
-  .addChannelOption(option =>
-    option
-      .setName('channel')
-      .setDescription('Канал (по умолчанию текущий)')
-      .setRequired(false)
+  .addChannelOption((option) =>
+    option.setName('channel').setDescription('Канал (по умолчанию текущий)').setRequired(false)
   );
 
 export async function handleFirstmessageCommand(
@@ -33,26 +35,31 @@ export async function handleFirstmessageCommand(
     }
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('📜 Первое сообщение')
       .addFields(
         { name: '📍 Канал', value: `<#${channel.id}>`, inline: true },
         { name: '👤 Автор', value: firstMessage.author.tag, inline: true },
-        { name: '📅 Дата', value: `<t:${Math.floor(firstMessage.createdTimestamp / 1000)}:F>`, inline: true },
+        {
+          name: '📅 Дата',
+          value: `<t:${Math.floor(firstMessage.createdTimestamp / 1000)}:F>`,
+          inline: true,
+        },
         { name: '🔗 Ссылка', value: `[Перейти к сообщению](${firstMessage.url})` }
       )
       .setTimestamp();
 
     if (firstMessage.content) {
-      const content = firstMessage.content.length > 200
-        ? firstMessage.content.slice(0, 200) + '...'
-        : firstMessage.content;
+      const content =
+        firstMessage.content.length > 200
+          ? firstMessage.content.slice(0, 200) + '...'
+          : firstMessage.content;
       embed.addFields({ name: '💬 Содержимое', value: content });
     }
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("firstmessage", error);
+    logCommandError('firstmessage', error);
     await interaction.editReply({ content: '❌ Не удалось получить первое сообщение.' });
   }
 }

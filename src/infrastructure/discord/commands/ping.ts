@@ -4,9 +4,7 @@ export const pingCommand = new SlashCommandBuilder()
   .setName('ping')
   .setDescription('Проверить задержку бота');
 
-export async function handlePingCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handlePingCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const sent = await interaction.reply({ content: '🏓 Пингую...', fetchReply: true });
 
   const roundtrip = sent.createdTimestamp - interaction.createdTimestamp;

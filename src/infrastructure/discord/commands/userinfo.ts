@@ -1,14 +1,16 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  GuildMember,
+} from 'discord.js';
 import { logCommandError } from '../utils/error-handler';
 
 export const userInfoCommand = new SlashCommandBuilder()
   .setName('userinfo')
   .setDescription('Показать информацию о пользователе')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь (по умолчанию — вы)')
-      .setRequired(false)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь (по умолчанию — вы)').setRequired(false)
   );
 
 export async function handleUserInfoCommand(
@@ -18,37 +20,36 @@ export async function handleUserInfoCommand(
 
   try {
     const targetUser = interaction.options.getUser('user') ?? interaction.user;
-    const member = interaction.guild?.members.cache.get(targetUser.id)
-      ?? await interaction.guild?.members.fetch(targetUser.id).catch(() => null);
+    const member =
+      interaction.guild?.members.cache.get(targetUser.id) ??
+      (await interaction.guild?.members.fetch(targetUser.id).catch(() => null));
 
     const createdTimestamp = Math.floor(targetUser.createdAt.getTime() / 1000);
 
     const embed = new EmbedBuilder()
-      .setColor(member?.displayColor || 0x5865F2)
+      .setColor(member?.displayColor || 0x5865f2)
       .setTitle(targetUser.tag)
       .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
       .addFields(
         {
           name: '🆔 ID',
           value: targetUser.id,
-          inline: true
+          inline: true,
         },
         {
           name: '🤖 Бот',
           value: targetUser.bot ? 'Да' : 'Нет',
-          inline: true
+          inline: true,
         },
         {
           name: '📅 Аккаунт создан',
           value: `<t:${createdTimestamp}:D>\n(<t:${createdTimestamp}:R>)`,
-          inline: true
+          inline: true,
         }
       );
 
     if (member instanceof GuildMember) {
-      const joinedTimestamp = member.joinedAt
-        ? Math.floor(member.joinedAt.getTime() / 1000)
-        : null;
+      const joinedTimestamp = member.joinedAt ? Math.floor(member.joinedAt.getTime() / 1000) : null;
 
       if (joinedTimestamp) {
         embed.addFields({
@@ -67,14 +68,15 @@ export async function handleUserInfoCommand(
       }
 
       const roles = member.roles.cache
-        .filter(role => role.id !== interaction.guild?.id)
+        .filter((role) => role.id !== interaction.guild?.id)
         .sort((a, b) => b.position - a.position)
-        .map(role => role.toString());
+        .map((role) => role.toString());
 
       if (roles.length > 0) {
-        const rolesDisplay = roles.length > 10
-          ? [...roles.slice(0, 10), `+${roles.length - 10} других`].join(', ')
-          : roles.join(', ');
+        const rolesDisplay =
+          roles.length > 10
+            ? [...roles.slice(0, 10), `+${roles.length - 10} других`].join(', ')
+            : roles.join(', ');
 
         embed.addFields({
           name: `🎭 Роли (${roles.length})`,
@@ -115,13 +117,11 @@ export async function handleUserInfoCommand(
       }
     }
 
-    embed
-      .setFooter({ text: `Запрос от ${interaction.user.tag}` })
-      .setTimestamp();
+    embed.setFooter({ text: `Запрос от ${interaction.user.tag}` }).setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("userinfo", error);
+    logCommandError('userinfo', error);
     await interaction.editReply('❌ Не удалось получить информацию о пользователе.');
   }
 }

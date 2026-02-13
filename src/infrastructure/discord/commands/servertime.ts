@@ -17,7 +17,7 @@ export async function handleServertimeCommand(
     { name: '🇯🇵 Токио', zone: 'Asia/Tokyo' },
   ];
 
-  const timeFields = timezones.map(tz => ({
+  const timeFields = timezones.map((tz) => ({
     name: tz.name,
     value: now.toLocaleString('uk-UA', {
       timeZone: tz.zone,
@@ -26,13 +26,13 @@ export async function handleServertimeCommand(
       second: '2-digit',
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     }),
-    inline: true
+    inline: true,
   }));
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('🌍 Мировое время')
     .addFields(timeFields)
     .setTimestamp();

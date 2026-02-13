@@ -1,23 +1,22 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const banCommand = new SlashCommandBuilder()
   .setName('ban')
   .setDescription('Забанить пользователя на сервере')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
-  .addIntegerOption(option =>
+  .addIntegerOption((option) =>
     option
       .setName('delete_messages')
       .setDescription('Удалить сообщения за последние N дней')
@@ -30,9 +29,7 @@ export const banCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
-export async function handleBanCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleBanCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -47,7 +44,10 @@ export async function handleBanCommand(
   const member = await interaction.guild?.members.fetch(targetUser.id).catch(() => null);
 
   if (member && !member.bannable) {
-    await interaction.reply({ content: '❌ Не могу забанить этого пользователя.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Не могу забанить этого пользователя.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -58,7 +58,7 @@ export async function handleBanCommand(
     });
 
     const embed = new EmbedBuilder()
-      .setColor(0xFF0000)
+      .setColor(0xff0000)
       .setTitle('🔨 Пользователь забанен')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -70,7 +70,11 @@ export async function handleBanCommand(
       .setTimestamp();
 
     if (deleteMessageDays > 0) {
-      embed.addFields({ name: '🗑️ Удалено сообщений', value: `За ${deleteMessageDays} дн.`, inline: true });
+      embed.addFields({
+        name: '🗑️ Удалено сообщений',
+        value: `За ${deleteMessageDays} дн.`,
+        inline: true,
+      });
     }
 
     await interaction.reply({ embeds: [embed] });

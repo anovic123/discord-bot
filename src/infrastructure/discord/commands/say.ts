@@ -1,27 +1,24 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const sayCommand = new SlashCommandBuilder()
   .setName('say')
   .setDescription('Отправить сообщение от имени бота')
-  .addStringOption(option =>
-    option
-      .setName('message')
-      .setDescription('Текст сообщения')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('message').setDescription('Текст сообщения').setRequired(true)
   )
-  .addChannelOption(option =>
-    option
-      .setName('channel')
-      .setDescription('Канал (по умолчанию текущий)')
-      .setRequired(false)
+  .addChannelOption((option) =>
+    option.setName('channel').setDescription('Канал (по умолчанию текущий)').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
-export async function handleSayCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleSayCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const message = interaction.options.getString('message', true);
@@ -34,9 +31,12 @@ export async function handleSayCommand(
 
   try {
     await channel.send(message);
-    await interaction.reply({ content: `✅ Сообщение отправлено в <#${channel.id}>`, ephemeral: true });
+    await interaction.reply({
+      content: `✅ Сообщение отправлено в <#${channel.id}>`,
+      ephemeral: true,
+    });
   } catch (error) {
-    logCommandError("say", error);
+    logCommandError('say', error);
     await interaction.reply({ content: '❌ Не удалось отправить сообщение.', ephemeral: true });
   }
 }

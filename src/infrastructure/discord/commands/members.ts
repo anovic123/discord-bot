@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  GuildMember,
+} from 'discord.js';
 import { logCommandError } from '../utils/error-handler';
 
 export const membersCommand = new SlashCommandBuilder()
@@ -27,7 +32,7 @@ export async function handleMembersCommand(
       .first();
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('👥 Статистика участников')
       .addFields(
         { name: '📊 Всего', value: `${total}`, inline: true },
@@ -39,13 +44,13 @@ export async function handleMembersCommand(
     if (newestMember) {
       embed.addFields({
         name: '🆕 Новый участник',
-        value: `<@${newestMember.id}> — <t:${Math.floor(newestMember.joinedTimestamp! / 1000)}:R>`
+        value: `<@${newestMember.id}> — <t:${Math.floor(newestMember.joinedTimestamp! / 1000)}:R>`,
       });
     }
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("members", error);
+    logCommandError('members', error);
     await interaction.editReply({ content: '❌ Не удалось получить статистику.' });
   }
 }

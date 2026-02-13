@@ -1,15 +1,17 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const voiceunmuteCommand = new SlashCommandBuilder()
   .setName('voiceunmute')
   .setDescription('Размутить пользователя в голосовом канале')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.MuteMembers);
 
@@ -41,7 +43,7 @@ export async function handleVoiceunmuteCommand(
     await member.voice.setMute(false);
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('🔊 Пользователь размучен')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -53,7 +55,7 @@ export async function handleVoiceunmuteCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("voiceunmute", error);
+    logCommandError('voiceunmute', error);
     await interaction.reply({ content: '❌ Не удалось размутить пользователя.', ephemeral: true });
   }
 }

@@ -1,57 +1,40 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const embedCommand = new SlashCommandBuilder()
   .setName('embed')
   .setDescription('Создать кастомный embed')
-  .addStringOption(option =>
-    option
-      .setName('description')
-      .setDescription('Текст сообщения')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('description').setDescription('Текст сообщения').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('title')
-      .setDescription('Заголовок')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('title').setDescription('Заголовок').setRequired(false)
   )
-  .addStringOption(option =>
-    option
-      .setName('color')
-      .setDescription('Цвет (hex без #, например: FF5500)')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('color').setDescription('Цвет (hex без #, например: FF5500)').setRequired(false)
   )
-  .addStringOption(option =>
-    option
-      .setName('image')
-      .setDescription('URL изображения')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('image').setDescription('URL изображения').setRequired(false)
   )
-  .addStringOption(option =>
-    option
-      .setName('thumbnail')
-      .setDescription('URL миниатюры')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('thumbnail').setDescription('URL миниатюры').setRequired(false)
   )
-  .addStringOption(option =>
-    option
-      .setName('footer')
-      .setDescription('Текст внизу')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('footer').setDescription('Текст внизу').setRequired(false)
   )
-  .addChannelOption(option =>
-    option
-      .setName('channel')
-      .setDescription('Канал (по умолчанию текущий)')
-      .setRequired(false)
+  .addChannelOption((option) =>
+    option.setName('channel').setDescription('Канал (по умолчанию текущий)').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
-export async function handleEmbedCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleEmbedCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const description = interaction.options.getString('description', true);
@@ -63,21 +46,21 @@ export async function handleEmbedCommand(
   const channel = interaction.options.getChannel('channel') ?? interaction.channel;
 
   if (!(channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Выбранный канал не является текстовым.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Выбранный канал не является текстовым.',
+      ephemeral: true,
+    });
     return;
   }
 
-  const color = colorHex ? parseInt(colorHex, 16) : 0x5865F2;
+  const color = colorHex ? parseInt(colorHex, 16) : 0x5865f2;
 
   if (isNaN(color)) {
     await interaction.reply({ content: '❌ Неверный формат цвета.', ephemeral: true });
     return;
   }
 
-  const embed = new EmbedBuilder()
-    .setColor(color)
-    .setDescription(description)
-    .setTimestamp();
+  const embed = new EmbedBuilder().setColor(color).setDescription(description).setTimestamp();
 
   if (title) embed.setTitle(title);
   if (image) embed.setImage(image);
@@ -88,7 +71,7 @@ export async function handleEmbedCommand(
     await channel.send({ embeds: [embed] });
     await interaction.reply({ content: `✅ Embed отправлен в <#${channel.id}>`, ephemeral: true });
   } catch (error) {
-    logCommandError("embed", error);
+    logCommandError('embed', error);
     await interaction.reply({ content: '❌ Не удалось отправить embed.', ephemeral: true });
   }
 }

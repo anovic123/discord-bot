@@ -1,26 +1,23 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 
 export const warnCommand = new SlashCommandBuilder()
   .setName('warn')
   .setDescription('Выдать предупреждение пользователю')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина предупреждения')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина предупреждения').setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
 
-export async function handleWarnCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleWarnCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -44,7 +41,7 @@ export async function handleWarnCommand(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0xFFFF00)
+    .setColor(0xffff00)
     .setTitle('⚠️ Предупреждение')
     .addFields(
       { name: '👤 Пользователь', value: `<@${targetUser.id}>`, inline: true },
@@ -59,14 +56,14 @@ export async function handleWarnCommand(
     await targetUser.send({
       embeds: [
         new EmbedBuilder()
-          .setColor(0xFFFF00)
+          .setColor(0xffff00)
           .setTitle(`⚠️ Вы получили предупреждение на сервере ${interaction.guild?.name}`)
           .addFields(
             { name: '📝 Причина', value: reason },
             { name: '👮 Модератор', value: interaction.user.tag }
           )
-          .setTimestamp()
-      ]
+          .setTimestamp(),
+      ],
     });
     embed.setFooter({ text: '📬 Уведомление отправлено в ЛС' });
   } catch {

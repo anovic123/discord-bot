@@ -1,21 +1,20 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const untimeoutCommand = new SlashCommandBuilder()
   .setName('untimeout')
   .setDescription('Снять тайм-аут с пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
 
@@ -43,7 +42,7 @@ export async function handleUntimeoutCommand(
     await member.timeout(null, reason);
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('✅ Тайм-аут снят')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -56,7 +55,7 @@ export async function handleUntimeoutCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("untimeout", error);
+    logCommandError('untimeout', error);
     await interaction.reply({ content: '❌ Не удалось снять тайм-аут.', ephemeral: true });
   }
 }

@@ -12,7 +12,7 @@ export async function handleCoinflipCommand(
   const emoji = result ? '🦅' : '💰';
 
   const embed = new EmbedBuilder()
-    .setColor(result ? 0xFFD700 : 0xC0C0C0)
+    .setColor(result ? 0xffd700 : 0xc0c0c0)
     .setTitle('🪙 Подбрасываю монетку...')
     .setDescription(`${emoji} **${side}!**`)
     .setTimestamp();

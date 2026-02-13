@@ -1,27 +1,24 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const deafenCommand = new SlashCommandBuilder()
   .setName('deafen')
   .setDescription('Заглушить пользователя в голосовом канале')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.DeafenMembers);
 
-export async function handleDeafenCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleDeafenCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -48,7 +45,7 @@ export async function handleDeafenCommand(
     await member.voice.setDeaf(true, reason);
 
     const embed = new EmbedBuilder()
-      .setColor(0xFF0000)
+      .setColor(0xff0000)
       .setTitle('🔇 Пользователь заглушен')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -61,7 +58,7 @@ export async function handleDeafenCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("deafen", error);
+    logCommandError('deafen', error);
     await interaction.reply({ content: '❌ Не удалось заглушить пользователя.', ephemeral: true });
   }
 }

@@ -1,4 +1,10 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
@@ -13,7 +19,10 @@ export async function handleSlowoffCommand(
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -26,7 +35,7 @@ export async function handleSlowoffCommand(
     await interaction.channel.setRateLimitPerUser(0);
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('🐇 Медленный режим выключен')
       .addFields(
         { name: '📍 Канал', value: `<#${interaction.channel.id}>`, inline: true },
@@ -36,7 +45,10 @@ export async function handleSlowoffCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("slowoff", error);
-    await interaction.reply({ content: '❌ Не удалось выключить медленный режим.', ephemeral: true });
+    logCommandError('slowoff', error);
+    await interaction.reply({
+      content: '❌ Не удалось выключить медленный режим.',
+      ephemeral: true,
+    });
   }
 }

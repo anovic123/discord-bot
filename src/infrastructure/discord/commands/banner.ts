@@ -4,16 +4,11 @@ import { logCommandError } from '../utils/error-handler';
 export const bannerCommand = new SlashCommandBuilder()
   .setName('banner')
   .setDescription('Показать баннер пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(false)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(false)
   );
 
-export async function handleBannerCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleBannerCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const targetUser = interaction.options.getUser('user') ?? interaction.user;
 
   try {
@@ -26,14 +21,14 @@ export async function handleBannerCommand(
     }
 
     const embed = new EmbedBuilder()
-      .setColor(user.accentColor ?? 0x5865F2)
+      .setColor(user.accentColor ?? 0x5865f2)
       .setTitle(`🖼️ Баннер ${user.tag}`)
       .setImage(bannerUrl)
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("banner", error);
+    logCommandError('banner', error);
     await interaction.reply({ content: '❌ Не удалось получить баннер.', ephemeral: true });
   }
 }

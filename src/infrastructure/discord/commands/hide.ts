@@ -1,25 +1,29 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const hideCommand = new SlashCommandBuilder()
   .setName('hide')
   .setDescription('Скрыть канал от всех участников')
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
 
-export async function handleHideCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleHideCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -42,7 +46,7 @@ export async function handleHideCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("hide", error);
+    logCommandError('hide', error);
     await interaction.reply({ content: '❌ Не удалось скрыть канал.', ephemeral: true });
   }
 }

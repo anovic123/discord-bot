@@ -5,13 +5,10 @@ import { logCommandError } from '../utils/error-handler';
 export const convertCommand = new SlashCommandBuilder()
   .setName('convert')
   .setDescription('Конвертировать валюту')
-  .addNumberOption(option =>
-    option
-      .setName('amount')
-      .setDescription('Сумма для конвертации')
-      .setRequired(true)
+  .addNumberOption((option) =>
+    option.setName('amount').setDescription('Сумма для конвертации').setRequired(true)
   )
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('from')
       .setDescription('Из какой валюты')
@@ -23,7 +20,7 @@ export const convertCommand = new SlashCommandBuilder()
         { name: 'PLN 🇵🇱', value: 'PLN' }
       )
   )
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('to')
       .setDescription('В какую валюту')
@@ -50,7 +47,7 @@ export async function handleConvertCommand(
     const message = await convertUseCase.execute(amount, from, to);
     await interaction.editReply(message);
   } catch (error) {
-    logCommandError("convert", error);
+    logCommandError('convert', error);
     await interaction.editReply('❌ Не удалось выполнить конвертацию. Попробуйте позже.');
   }
 }

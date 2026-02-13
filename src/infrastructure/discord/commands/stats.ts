@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, version as djsVersion } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  version as djsVersion,
+} from 'discord.js';
 import { statsTracker } from '../utils/stats-tracker';
 import os from 'os';
 
@@ -21,9 +26,7 @@ export const statsCommand = new SlashCommandBuilder()
   .setName('stats')
   .setDescription('Показать статистику бота');
 
-export async function handleStatsCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleStatsCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const client = interaction.client;
   const stats = statsTracker.getStats();
 
@@ -39,16 +42,17 @@ export async function handleStatsCommand(
   const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
   const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
 
-  const topCommandsStr = stats.topCommands.length > 0
-    ? stats.topCommands.map(([cmd, count], i) => `${i + 1}. \`/${cmd}\` — ${count}`).join('\n')
-    : 'Нет данных';
+  const topCommandsStr =
+    stats.topCommands.length > 0
+      ? stats.topCommands.map(([cmd, count], i) => `${i + 1}. \`/${cmd}\` — ${count}`).join('\n')
+      : 'Нет данных';
 
   const lastCommandStr = stats.lastCommandTime
     ? `<t:${Math.floor(stats.lastCommandTime.getTime() / 1000)}:R>`
     : 'Нет данных';
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('📊 Статистика бота')
     .setThumbnail(client.user?.displayAvatarURL() || null)
     .addFields(

@@ -1,17 +1,19 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const nickCommand = new SlashCommandBuilder()
   .setName('nick')
   .setDescription('Изменить никнейм пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('nickname')
       .setDescription('Новый никнейм (оставьте пустым для сброса)')
@@ -19,9 +21,7 @@ export const nickCommand = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageNicknames);
 
-export async function handleNickCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleNickCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -35,7 +35,10 @@ export async function handleNickCommand(
   }
 
   if (!member.manageable) {
-    await interaction.reply({ content: '❌ Не могу изменить никнейм этого пользователя.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Не могу изменить никнейм этого пользователя.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -45,7 +48,7 @@ export async function handleNickCommand(
     await member.setNickname(newNickname);
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('📝 Никнейм изменён')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -59,7 +62,7 @@ export async function handleNickCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("nick", error);
+    logCommandError('nick', error);
     await interaction.reply({ content: '❌ Не удалось изменить никнейм.', ephemeral: true });
   }
 }

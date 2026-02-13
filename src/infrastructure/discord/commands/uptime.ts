@@ -21,13 +21,11 @@ export const uptimeCommand = new SlashCommandBuilder()
   .setName('uptime')
   .setDescription('Показать время работы бота');
 
-export async function handleUptimeCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleUptimeCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const uptime = Date.now() - startTime;
 
   const embed = new EmbedBuilder()
-    .setColor(0x00FF00)
+    .setColor(0x00ff00)
     .setTitle('⏱️ Время работы бота')
     .addFields(
       { name: '🕐 Аптайм', value: formatUptime(uptime), inline: true },

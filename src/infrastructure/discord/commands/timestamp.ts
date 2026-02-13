@@ -3,18 +3,15 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const timestampCommand = new SlashCommandBuilder()
   .setName('timestamp')
   .setDescription('Создать Discord timestamp')
-  .addStringOption(option =>
-    option.setName('date')
-      .setDescription('Дата (DD.MM.YYYY или YYYY-MM-DD)')
-      .setRequired(false))
-  .addStringOption(option =>
-    option.setName('time')
-      .setDescription('Время (HH:MM)')
-      .setRequired(false))
-  .addIntegerOption(option =>
-    option.setName('minutes')
-      .setDescription('Или: через сколько минут')
-      .setRequired(false));
+  .addStringOption((option) =>
+    option.setName('date').setDescription('Дата (DD.MM.YYYY или YYYY-MM-DD)').setRequired(false)
+  )
+  .addStringOption((option) =>
+    option.setName('time').setDescription('Время (HH:MM)').setRequired(false)
+  )
+  .addIntegerOption((option) =>
+    option.setName('minutes').setDescription('Или: через сколько минут').setRequired(false)
+  );
 
 export async function handleTimestampCommand(
   interaction: ChatInputCommandInteraction
@@ -31,9 +28,7 @@ export async function handleTimestampCommand(
     let date = new Date();
 
     if (dateStr) {
-      const parts = dateStr.includes('.')
-        ? dateStr.split('.').reverse().join('-')
-        : dateStr;
+      const parts = dateStr.includes('.') ? dateStr.split('.').reverse().join('-') : dateStr;
       const parsed = new Date(parts);
       if (!isNaN(parsed.getTime())) {
         date = parsed;
@@ -60,17 +55,15 @@ export async function handleTimestampCommand(
     { name: 'Относительное', format: 'R', example: `<t:${timestamp}:R>` },
   ];
 
-  const formatsList = formats.map(f =>
-    `**${f.name}:** ${f.example}\n\`<t:${timestamp}:${f.format}>\``
-  ).join('\n\n');
+  const formatsList = formats
+    .map((f) => `**${f.name}:** ${f.example}\n\`<t:${timestamp}:${f.format}>\``)
+    .join('\n\n');
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('🕐 Discord Timestamp')
     .setDescription(formatsList)
-    .addFields(
-      { name: '📋 Unix timestamp', value: `\`${timestamp}\``, inline: true }
-    )
+    .addFields({ name: '📋 Unix timestamp', value: `\`${timestamp}\``, inline: true })
     .setFooter({ text: 'Скопируйте нужный формат' })
     .setTimestamp();
 

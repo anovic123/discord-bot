@@ -17,13 +17,12 @@ const languages: Record<string, string> = {
 export const translateCommand = new SlashCommandBuilder()
   .setName('translate')
   .setDescription('Перевести текст')
-  .addStringOption(option =>
-    option.setName('text')
-      .setDescription('Текст для перевода')
-      .setRequired(true)
-      .setMaxLength(500))
-  .addStringOption(option =>
-    option.setName('to')
+  .addStringOption((option) =>
+    option.setName('text').setDescription('Текст для перевода').setRequired(true).setMaxLength(500)
+  )
+  .addStringOption((option) =>
+    option
+      .setName('to')
       .setDescription('На какой язык перевести')
       .setRequired(true)
       .addChoices(
@@ -34,7 +33,8 @@ export const translateCommand = new SlashCommandBuilder()
         { name: 'Французский', value: 'fr' },
         { name: 'Испанский', value: 'es' },
         { name: 'Польский', value: 'pl' }
-      ));
+      )
+  );
 
 export async function handleTranslateCommand(
   interaction: ChatInputCommandInteraction
@@ -53,7 +53,7 @@ export async function handleTranslateCommand(
       throw new Error('API error');
     }
 
-    const data = await response.json() as {
+    const data = (await response.json()) as {
       responseStatus: number;
       responseData: { translatedText: string };
       matches?: Array<{ source: string }>;
@@ -67,21 +67,24 @@ export async function handleTranslateCommand(
     const detectedLang = data.matches?.[0]?.source || 'auto';
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('🌐 Перевод')
       .addFields(
         { name: '📝 Оригинал', value: text.length > 500 ? text.substring(0, 500) + '...' : text },
-        { name: `🔄 ${languages[targetLang] || targetLang}`, value: translated.length > 500 ? translated.substring(0, 500) + '...' : translated }
+        {
+          name: `🔄 ${languages[targetLang] || targetLang}`,
+          value: translated.length > 500 ? translated.substring(0, 500) + '...' : translated,
+        }
       )
       .setFooter({ text: `Определён язык: ${detectedLang}` })
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("translate", error);
+    logCommandError('translate', error);
 
     const embed = new EmbedBuilder()
-      .setColor(0xFF0000)
+      .setColor(0xff0000)
       .setTitle('❌ Ошибка перевода')
       .setDescription('Не удалось выполнить перевод. Попробуйте позже.')
       .setTimestamp();

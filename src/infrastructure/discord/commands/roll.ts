@@ -3,22 +3,24 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const rollCommand = new SlashCommandBuilder()
   .setName('roll')
   .setDescription('Бросить кости')
-  .addIntegerOption(option =>
-    option.setName('dice')
+  .addIntegerOption((option) =>
+    option
+      .setName('dice')
       .setDescription('Количество костей (1-10)')
       .setRequired(false)
       .setMinValue(1)
-      .setMaxValue(10))
-  .addIntegerOption(option =>
-    option.setName('sides')
+      .setMaxValue(10)
+  )
+  .addIntegerOption((option) =>
+    option
+      .setName('sides')
       .setDescription('Количество граней (2-100)')
       .setRequired(false)
       .setMinValue(2)
-      .setMaxValue(100));
+      .setMaxValue(100)
+  );
 
-export async function handleRollCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleRollCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const diceCount = interaction.options.getInteger('dice') ?? 1;
   const sides = interaction.options.getInteger('sides') ?? 6;
 
@@ -31,7 +33,7 @@ export async function handleRollCommand(
   const diceEmoji = sides === 6 ? '🎲' : '🎯';
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`${diceEmoji} Бросок костей`)
     .addFields(
       { name: '🎯 Результаты', value: rolls.join(', '), inline: true },

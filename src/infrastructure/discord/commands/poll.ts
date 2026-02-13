@@ -5,22 +5,17 @@ const POLL_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6�
 export const pollCommand = new SlashCommandBuilder()
   .setName('poll')
   .setDescription('Создать голосование')
-  .addStringOption(option =>
-    option
-      .setName('question')
-      .setDescription('Вопрос для голосования')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('question').setDescription('Вопрос для голосования').setRequired(true)
   )
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('options')
       .setDescription('Варианты ответов через | (например: Да | Нет | Возможно)')
       .setRequired(false)
   );
 
-export async function handlePollCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handlePollCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const question = interaction.options.getString('question', true);
   const optionsString = interaction.options.getString('options');
 
@@ -28,7 +23,10 @@ export async function handlePollCommand(
   let emojis: string[] = [];
 
   if (optionsString) {
-    options = optionsString.split('|').map(o => o.trim()).filter(o => o.length > 0);
+    options = optionsString
+      .split('|')
+      .map((o) => o.trim())
+      .filter((o) => o.length > 0);
 
     if (options.length < 2) {
       await interaction.reply({ content: '❌ Нужно минимум 2 варианта ответа.', ephemeral: true });
@@ -46,7 +44,7 @@ export async function handlePollCommand(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('📊 ' + question)
     .setFooter({ text: `Голосование от ${interaction.user.tag}` })
     .setTimestamp();

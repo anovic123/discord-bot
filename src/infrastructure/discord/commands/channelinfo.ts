@@ -1,13 +1,17 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ChannelType, TextChannel, VoiceChannel } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  ChannelType,
+  TextChannel,
+  VoiceChannel,
+} from 'discord.js';
 
 export const channelinfoCommand = new SlashCommandBuilder()
   .setName('channelinfo')
   .setDescription('Информация о канале')
-  .addChannelOption(option =>
-    option
-      .setName('channel')
-      .setDescription('Канал (по умолчанию текущий)')
-      .setRequired(false)
+  .addChannelOption((option) =>
+    option.setName('channel').setDescription('Канал (по умолчанию текущий)').setRequired(false)
   );
 
 export async function handleChannelinfoCommand(
@@ -36,12 +40,16 @@ export async function handleChannelinfoCommand(
   };
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`📍 Информация о канале: #${guildChannel.name}`)
     .addFields(
       { name: '🆔 ID', value: guildChannel.id, inline: true },
       { name: '📂 Тип', value: channelTypes[guildChannel.type] ?? 'Неизвестно', inline: true },
-      { name: '📅 Создан', value: `<t:${Math.floor(guildChannel.createdTimestamp! / 1000)}:R>`, inline: true }
+      {
+        name: '📅 Создан',
+        value: `<t:${Math.floor(guildChannel.createdTimestamp! / 1000)}:R>`,
+        inline: true,
+      }
     );
 
   if (guildChannel.parent) {
@@ -50,7 +58,12 @@ export async function handleChannelinfoCommand(
 
   if (guildChannel instanceof TextChannel) {
     embed.addFields(
-      { name: '🐢 Слоумод', value: guildChannel.rateLimitPerUser > 0 ? `${guildChannel.rateLimitPerUser} сек` : 'Выключен', inline: true },
+      {
+        name: '🐢 Слоумод',
+        value:
+          guildChannel.rateLimitPerUser > 0 ? `${guildChannel.rateLimitPerUser} сек` : 'Выключен',
+        inline: true,
+      },
       { name: '🔞 NSFW', value: guildChannel.nsfw ? 'Да' : 'Нет', inline: true }
     );
     if (guildChannel.topic) {
@@ -61,7 +74,11 @@ export async function handleChannelinfoCommand(
   if (guildChannel instanceof VoiceChannel) {
     embed.addFields(
       { name: '👥 Участников', value: `${guildChannel.members.size}`, inline: true },
-      { name: '👤 Лимит', value: guildChannel.userLimit > 0 ? `${guildChannel.userLimit}` : 'Нет', inline: true },
+      {
+        name: '👤 Лимит',
+        value: guildChannel.userLimit > 0 ? `${guildChannel.userLimit}` : 'Нет',
+        inline: true,
+      },
       { name: '📶 Битрейт', value: `${guildChannel.bitrate / 1000} kbps`, inline: true }
     );
   }

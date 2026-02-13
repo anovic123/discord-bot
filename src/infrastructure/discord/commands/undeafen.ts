@@ -1,15 +1,17 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const undeafenCommand = new SlashCommandBuilder()
   .setName('undeafen')
   .setDescription('Снять заглушку с пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.DeafenMembers);
 
@@ -41,7 +43,7 @@ export async function handleUndeafenCommand(
     await member.voice.setDeaf(false);
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('🔊 Заглушка снята')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -53,7 +55,7 @@ export async function handleUndeafenCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("undeafen", error);
+    logCommandError('undeafen', error);
     await interaction.reply({ content: '❌ Не удалось снять заглушку.', ephemeral: true });
   }
 }

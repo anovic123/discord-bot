@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
@@ -14,24 +19,18 @@ const DURATION_CHOICES = [
 export const timeoutCommand = new SlashCommandBuilder()
   .setName('timeout')
   .setDescription('Выдать тайм-аут пользователю')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addIntegerOption(option =>
+  .addIntegerOption((option) =>
     option
       .setName('duration')
       .setDescription('Длительность')
       .setRequired(true)
       .addChoices(...DURATION_CHOICES)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
 
@@ -62,17 +61,21 @@ export async function handleTimeoutCommand(
   }
 
   if (!member.moderatable) {
-    await interaction.reply({ content: '❌ Не могу выдать тайм-аут этому пользователю.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Не могу выдать тайм-аут этому пользователю.',
+      ephemeral: true,
+    });
     return;
   }
 
   try {
     await member.timeout(duration * 1000, reason);
 
-    const durationText = DURATION_CHOICES.find(d => d.value === duration)?.name ?? `${duration} сек`;
+    const durationText =
+      DURATION_CHOICES.find((d) => d.value === duration)?.name ?? `${duration} сек`;
 
     const embed = new EmbedBuilder()
-      .setColor(0xFFA500)
+      .setColor(0xffa500)
       .setTitle('⏱️ Тайм-аут выдан')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -85,7 +88,7 @@ export async function handleTimeoutCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("timeout", error);
+    logCommandError('timeout', error);
     await interaction.reply({ content: '❌ Не удалось выдать тайм-аут.', ephemeral: true });
   }
 }

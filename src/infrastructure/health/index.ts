@@ -4,14 +4,18 @@ import { createLogger } from '../logger';
 const logger = createLogger('Health');
 
 let isHealthy = true;
+let serverStatsProvider: (() => object) | null = null;
 
 export function setHealthy(healthy: boolean): void {
   isHealthy = healthy;
 }
 
+export function setServerStatsProvider(provider: () => object): void {
+  serverStatsProvider = provider;
+}
+
 export function startHealthServer(port = 3000): http.Server {
   const server = http.createServer((req, res) => {
-
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Content-Security-Policy', "default-src 'none'");
@@ -27,9 +31,17 @@ export function startHealthServer(port = 3000): http.Server {
 
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(body);
-    } else if (req.url === '/ready' && req.method === 'GET') {
+    } else if (req.url === '/stats' && req.method === 'GET') {
+      if (!serverStatsProvider) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Bot not connected yet' }));
+        return;
+      }
+
+      const body = JSON.stringify(serverStatsProvider());
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ready' }));
+      res.end(body);
     } else {
       res.writeHead(404);
       res.end();

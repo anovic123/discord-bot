@@ -16,7 +16,7 @@ export async function handleCryptoCommand(
     const message = await getCryptoUseCase.execute();
     await interaction.editReply(message);
   } catch (error) {
-    logCommandError("crypto", error);
+    logCommandError('crypto', error);
     await interaction.editReply('❌ Не удалось получить курс криптовалют. Попробуйте позже.');
   }
 }

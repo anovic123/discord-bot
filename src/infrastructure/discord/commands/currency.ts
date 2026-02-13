@@ -16,7 +16,7 @@ export async function handleCurrencyCommand(
     const message = await getRatesUseCase.execute();
     await interaction.editReply(message);
   } catch (error) {
-    logCommandError("currency", error);
+    logCommandError('currency', error);
     await interaction.editReply('❌ Не удалось получить курсы валют. Попробуйте позже.');
   }
 }

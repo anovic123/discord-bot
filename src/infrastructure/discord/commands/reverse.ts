@@ -3,11 +3,8 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const reverseCommand = new SlashCommandBuilder()
   .setName('reverse')
   .setDescription('Перевернуть текст')
-  .addStringOption(option =>
-    option
-      .setName('text')
-      .setDescription('Текст для переворота')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('text').setDescription('Текст для переворота').setRequired(true)
   );
 
 export async function handleReverseCommand(
@@ -17,7 +14,7 @@ export async function handleReverseCommand(
   const reversed = [...text].reverse().join('');
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('🔄 Перевёрнутый текст')
     .addFields(
       { name: '📝 Оригинал', value: text.slice(0, 500) },

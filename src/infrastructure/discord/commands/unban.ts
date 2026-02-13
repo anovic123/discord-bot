@@ -1,27 +1,24 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const unbanCommand = new SlashCommandBuilder()
   .setName('unban')
   .setDescription('Разбанить пользователя')
-  .addStringOption(option =>
-    option
-      .setName('user_id')
-      .setDescription('ID пользователя для разбана')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('user_id').setDescription('ID пользователя для разбана').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина разбана')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина разбана').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
-export async function handleUnbanCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleUnbanCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const userId = interaction.options.getString('user_id', true);
@@ -32,14 +29,17 @@ export async function handleUnbanCommand(
     const bannedUser = banList?.get(userId);
 
     if (!bannedUser) {
-      await interaction.reply({ content: '❌ Пользователь не найден в списке банов.', ephemeral: true });
+      await interaction.reply({
+        content: '❌ Пользователь не найден в списке банов.',
+        ephemeral: true,
+      });
       return;
     }
 
     await interaction.guild?.members.unban(userId, reason);
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('✅ Пользователь разбанен')
       .addFields(
         { name: '👤 Пользователь', value: bannedUser.user.tag, inline: true },
@@ -52,7 +52,7 @@ export async function handleUnbanCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("unban", error);
+    logCommandError('unban', error);
     await interaction.reply({ content: '❌ Не удалось разбанить пользователя.', ephemeral: true });
   }
 }

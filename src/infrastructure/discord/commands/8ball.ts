@@ -26,10 +26,9 @@ const answers = [
 export const eightballCommand = new SlashCommandBuilder()
   .setName('8ball')
   .setDescription('Задать вопрос магическому шару')
-  .addStringOption(option =>
-    option.setName('question')
-      .setDescription('Ваш вопрос')
-      .setRequired(true));
+  .addStringOption((option) =>
+    option.setName('question').setDescription('Ваш вопрос').setRequired(true)
+  );
 
 export async function handleEightballCommand(
   interaction: ChatInputCommandInteraction
@@ -37,16 +36,13 @@ export async function handleEightballCommand(
   const question = interaction.options.getString('question', true);
   const answer = answers[Math.floor(Math.random() * answers.length)];
 
-  const color = answer.type === 'positive' ? 0x00FF00 :
-                answer.type === 'negative' ? 0xFF0000 : 0xFFFF00;
+  const color =
+    answer.type === 'positive' ? 0x00ff00 : answer.type === 'negative' ? 0xff0000 : 0xffff00;
 
   const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle('🎱 Магический шар')
-    .addFields(
-      { name: '❓ Вопрос', value: question },
-      { name: '🔮 Ответ', value: answer.text }
-    )
+    .addFields({ name: '❓ Вопрос', value: question }, { name: '🔮 Ответ', value: answer.text })
     .setTimestamp();
 
   await interaction.reply({ embeds: [embed] });

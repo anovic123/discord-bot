@@ -1,17 +1,23 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder, ChannelType } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+  ChannelType,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 
 export const moveallCommand = new SlashCommandBuilder()
   .setName('moveall')
   .setDescription('Переместить всех пользователей из одного голосового канала в другой')
-  .addChannelOption(option =>
+  .addChannelOption((option) =>
     option
       .setName('from')
       .setDescription('Из какого канала')
       .setRequired(true)
       .addChannelTypes(ChannelType.GuildVoice)
   )
-  .addChannelOption(option =>
+  .addChannelOption((option) =>
     option
       .setName('to')
       .setDescription('В какой канал')
@@ -61,7 +67,7 @@ export async function handleMoveallCommand(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(moved > 0 ? 0x00FF00 : 0xFF0000)
+    .setColor(moved > 0 ? 0x00ff00 : 0xff0000)
     .setTitle('🔀 Перемещение пользователей')
     .addFields(
       { name: '📤 Из канала', value: `<#${fromChannel.id}>`, inline: true },

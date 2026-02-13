@@ -3,22 +3,17 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const avatarCommand = new SlashCommandBuilder()
   .setName('avatar')
   .setDescription('Показать аватар пользователя в полном размере')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь (по умолчанию — вы)')
-      .setRequired(false)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь (по умолчанию — вы)').setRequired(false)
   );
 
-export async function handleAvatarCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleAvatarCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const targetUser = interaction.options.getUser('user') ?? interaction.user;
 
   const avatarUrl = targetUser.displayAvatarURL({ size: 4096 });
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`Аватар ${targetUser.tag}`)
     .setImage(avatarUrl)
     .addFields({

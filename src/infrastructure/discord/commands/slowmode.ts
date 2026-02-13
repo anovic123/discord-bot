@@ -1,4 +1,10 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
@@ -22,7 +28,7 @@ const DURATION_CHOICES = [
 export const slowmodeCommand = new SlashCommandBuilder()
   .setName('slowmode')
   .setDescription('Установить медленный режим в канале')
-  .addIntegerOption(option =>
+  .addIntegerOption((option) =>
     option
       .setName('duration')
       .setDescription('Задержка между сообщениями')
@@ -37,7 +43,10 @@ export async function handleSlowmodeCommand(
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -46,10 +55,11 @@ export async function handleSlowmodeCommand(
   try {
     await interaction.channel.setRateLimitPerUser(duration);
 
-    const durationText = DURATION_CHOICES.find(d => d.value === duration)?.name ?? `${duration} сек`;
+    const durationText =
+      DURATION_CHOICES.find((d) => d.value === duration)?.name ?? `${duration} сек`;
 
     const embed = new EmbedBuilder()
-      .setColor(duration === 0 ? 0x00ff00 : 0xFFA500)
+      .setColor(duration === 0 ? 0x00ff00 : 0xffa500)
       .setTitle(duration === 0 ? '🐇 Медленный режим выключен' : '🐢 Медленный режим включен')
       .addFields(
         { name: '📍 Канал', value: `<#${interaction.channel.id}>`, inline: true },
@@ -60,7 +70,10 @@ export async function handleSlowmodeCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("slowmode", error);
-    await interaction.reply({ content: '❌ Не удалось установить медленный режим.', ephemeral: true });
+    logCommandError('slowmode', error);
+    await interaction.reply({
+      content: '❌ Не удалось установить медленный режим.',
+      ephemeral: true,
+    });
   }
 }

@@ -3,7 +3,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const mathCommand = new SlashCommandBuilder()
   .setName('math')
   .setDescription('Калькулятор')
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('expression')
       .setDescription('Математическое выражение (например: 2+2*2)')
@@ -27,19 +27,20 @@ function safeEval(expression: string): number | null {
   }
 }
 
-export async function handleMathCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleMathCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const expression = interaction.options.getString('expression', true);
   const result = safeEval(expression);
 
   if (result === null) {
-    await interaction.reply({ content: '❌ Неверное выражение. Используйте только числа и операторы: + - * / % ( )', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Неверное выражение. Используйте только числа и операторы: + - * / % ( )',
+      ephemeral: true,
+    });
     return;
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('🔢 Калькулятор')
     .addFields(
       { name: '📝 Выражение', value: `\`${expression}\``, inline: true },

@@ -1,27 +1,24 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const kickCommand = new SlashCommandBuilder()
   .setName('kick')
   .setDescription('Кикнуть пользователя с сервера')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers);
 
-export async function handleKickCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleKickCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -48,7 +45,7 @@ export async function handleKickCommand(
     await member.kick(reason);
 
     const embed = new EmbedBuilder()
-      .setColor(0xFFA500)
+      .setColor(0xffa500)
       .setTitle('👢 Пользователь кикнут')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -61,7 +58,7 @@ export async function handleKickCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("kick", error);
+    logCommandError('kick', error);
     await interaction.reply({ content: '❌ Не удалось кикнуть пользователя.', ephemeral: true });
   }
 }

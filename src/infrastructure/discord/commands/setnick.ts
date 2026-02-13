@@ -4,7 +4,7 @@ import { logCommandError } from '../utils/error-handler';
 export const setnickCommand = new SlashCommandBuilder()
   .setName('setnick')
   .setDescription('Изменить свой никнейм')
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('nickname')
       .setDescription('Новый никнейм (оставьте пустым для сброса)')
@@ -29,7 +29,7 @@ export async function handleSetnickCommand(
     await member.setNickname(newNickname);
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('📝 Никнейм изменён')
       .addFields(
         { name: '📛 Старый', value: oldNickname, inline: true },
@@ -40,7 +40,7 @@ export async function handleSetnickCommand(
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
   } catch (error) {
-    logCommandError("setnick", error);
+    logCommandError('setnick', error);
     await interaction.reply({ content: '❌ Не удалось изменить никнейм.', ephemeral: true });
   }
 }

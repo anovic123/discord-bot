@@ -4,5 +4,4 @@ node_modules/
 .idea/
 dist/
 coverage/
-game-activity.json
 audit-log.json

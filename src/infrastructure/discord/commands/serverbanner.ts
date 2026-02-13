@@ -22,7 +22,7 @@ export async function handleServerbannerCommand(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`🖼️ Баннер сервера ${guild.name}`)
     .setImage(bannerUrl)
     .setTimestamp();

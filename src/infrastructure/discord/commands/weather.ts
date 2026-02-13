@@ -23,10 +23,9 @@ interface WeatherResponse {
 export const weatherCommand = new SlashCommandBuilder()
   .setName('weather')
   .setDescription('Показать погоду (требуется API ключ)')
-  .addStringOption(option =>
-    option.setName('city')
-      .setDescription('Название города')
-      .setRequired(true));
+  .addStringOption((option) =>
+    option.setName('city').setDescription('Название города').setRequired(true)
+  );
 
 export async function handleWeatherCommand(
   interaction: ChatInputCommandInteraction
@@ -37,9 +36,11 @@ export async function handleWeatherCommand(
 
   if (!apiKey) {
     const embed = new EmbedBuilder()
-      .setColor(0xFF9900)
+      .setColor(0xff9900)
       .setTitle('⚠️ Погода недоступна')
-      .setDescription('API ключ OpenWeatherMap не настроен.\nДобавьте `OPENWEATHER_API_KEY` в переменные окружения.')
+      .setDescription(
+        'API ключ OpenWeatherMap не настроен.\nДобавьте `OPENWEATHER_API_KEY` в переменные окружения.'
+      )
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -60,23 +61,23 @@ export async function handleWeatherCommand(
       throw new Error('City not found');
     }
 
-    const data = await response.json() as WeatherResponse;
+    const data = (await response.json()) as WeatherResponse;
 
     const weatherEmoji: Record<string, string> = {
-      'Clear': '☀️',
-      'Clouds': '☁️',
-      'Rain': '🌧️',
-      'Drizzle': '🌦️',
-      'Thunderstorm': '⛈️',
-      'Snow': '🌨️',
-      'Mist': '🌫️',
-      'Fog': '🌫️',
+      Clear: '☀️',
+      Clouds: '☁️',
+      Rain: '🌧️',
+      Drizzle: '🌦️',
+      Thunderstorm: '⛈️',
+      Snow: '🌨️',
+      Mist: '🌫️',
+      Fog: '🌫️',
     };
 
     const emoji = weatherEmoji[data.weather[0].main] || '🌡️';
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle(`${emoji} Погода в ${data.name}`)
       .addFields(
         { name: '🌡️ Температура', value: `${Math.round(data.main.temp)}°C`, inline: true },
@@ -89,10 +90,10 @@ export async function handleWeatherCommand(
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("weather", error);
+    logCommandError('weather', error);
 
     const embed = new EmbedBuilder()
-      .setColor(0xFF0000)
+      .setColor(0xff0000)
       .setTitle('❌ Ошибка')
       .setDescription(`Не удалось найти город "${city}"`)
       .setTimestamp();

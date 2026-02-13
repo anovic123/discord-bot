@@ -3,21 +3,22 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const colorCommand = new SlashCommandBuilder()
   .setName('color')
   .setDescription('Информация о цвете')
-  .addStringOption(option =>
+  .addStringOption((option) =>
     option
       .setName('hex')
       .setDescription('Цвет в формате HEX (например: FF5500 или #FF5500)')
       .setRequired(true)
   );
 
-export async function handleColorCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleColorCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   let hex = interaction.options.getString('hex', true);
   hex = hex.replace('#', '').toUpperCase();
 
   if (!/^[0-9A-F]{6}$/i.test(hex)) {
-    await interaction.reply({ content: '❌ Неверный формат цвета. Используйте HEX (например: FF5500).', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Неверный формат цвета. Используйте HEX (например: FF5500).',
+      ephemeral: true,
+    });
     return;
   }
 

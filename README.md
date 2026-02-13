@@ -40,13 +40,28 @@ npm start
 docker-compose up -d
 ```
 
+## Ежедневный отчёт
+
+Каждый день в 9:00 (настраивается через `CRON_TIME`) бот отправляет в канал:
+
+1. Курсы валют (USD/EUR/PLN к гривне)
+2. Курсы криптовалют (BTC, ETH, SOL и др.)
+3. Статистику сервера — участники, онлайн, голосовые, каналы, бусты, роли, эмодзи
+
+## HTTP эндпоинты
+
+| Эндпоинт | Описание |
+|----------|----------|
+| `GET /health` | Статус здоровья бота |
+| `GET /stats` | Статистика сервера (участники, онлайн, голосовые, каналы, бусты) |
+
 ## Команды бота
 
 ### Модерация
-`/ban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`
+`/ban`, `/tempban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`
 
 ### Информация
-`/userinfo`, `/whois`, `/serverinfo`, `/channelinfo`, `/roleinfo`, `/roles`, `/members`, `/invites`, `/boosters`, `/emojis`, `/stats`, `/gamestats`, `/uptime`, `/servertime`
+`/userinfo`, `/whois`, `/serverinfo`, `/channelinfo`, `/roleinfo`, `/roles`, `/members`, `/invites`, `/boosters`, `/emojis`, `/stats`, `/uptime`, `/servertime`, `/summary`
 
 ### Утилиты
 `/avatar`, `/banner`, `/servericon`, `/serverbanner`, `/firstmessage`, `/poll`, `/reminder`, `/translate`, `/weather`, `/qr`, `/timestamp`

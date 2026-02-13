@@ -1,15 +1,17 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const nicknameCommand = new SlashCommandBuilder()
   .setName('nickname')
   .setDescription('Сбросить никнейм пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageNicknames);
 
@@ -28,7 +30,10 @@ export async function handleNicknameCommand(
   }
 
   if (!member.manageable) {
-    await interaction.reply({ content: '❌ Не могу изменить никнейм этого пользователя.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Не могу изменить никнейм этого пользователя.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -43,7 +48,7 @@ export async function handleNicknameCommand(
     await member.setNickname(null);
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(0x5865f2)
       .setTitle('📝 Никнейм сброшен')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -55,7 +60,7 @@ export async function handleNicknameCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("nickname", error);
+    logCommandError('nickname', error);
     await interaction.reply({ content: '❌ Не удалось сбросить никнейм.', ephemeral: true });
   }
 }

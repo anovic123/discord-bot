@@ -22,7 +22,7 @@ export async function handleServericonCommand(
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`🖼️ Иконка сервера ${guild.name}`)
     .setImage(iconUrl)
     .setTimestamp();

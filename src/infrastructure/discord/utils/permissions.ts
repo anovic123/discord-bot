@@ -3,6 +3,7 @@ import { ChatInputCommandInteraction, PermissionFlagsBits, GuildMember } from 'd
 export const ADMIN_COMMANDS: readonly string[] = [
   // Баны и модерация
   'ban',
+  'tempban',
   'unban',
   'banlist',
   'kick',
@@ -58,7 +59,7 @@ export async function requireAdmin(interaction: ChatInputCommandInteraction): Pr
   if (!isAdmin(member)) {
     await interaction.reply({
       content: '❌ Эта команда доступна только администраторам.',
-      ephemeral: true
+      ephemeral: true,
     });
     return false;
   }

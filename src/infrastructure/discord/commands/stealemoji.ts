@@ -1,21 +1,20 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const stealemojiCommand = new SlashCommandBuilder()
   .setName('stealemoji')
   .setDescription('Добавить эмодзи на сервер по ссылке или из другого сервера')
-  .addStringOption(option =>
-    option
-      .setName('emoji')
-      .setDescription('Эмодзи или ссылка на изображение')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('emoji').setDescription('Эмодзи или ссылка на изображение').setRequired(true)
   )
-  .addStringOption(option =>
-    option
-      .setName('name')
-      .setDescription('Название для эмодзи')
-      .setRequired(true)
+  .addStringOption((option) =>
+    option.setName('name').setDescription('Название для эмодзи').setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuildExpressions);
 
@@ -30,7 +29,7 @@ export async function handleStealemojiCommand(
   if (!/^[a-zA-Z0-9_]+$/.test(name) || name.length < 2 || name.length > 32) {
     await interaction.reply({
       content: '❌ Название эмодзи должно содержать только буквы, цифры и _ (2-32 символа).',
-      ephemeral: true
+      ephemeral: true,
     });
     return;
   }
@@ -47,7 +46,7 @@ export async function handleStealemojiCommand(
   } else {
     await interaction.reply({
       content: '❌ Укажите кастомный эмодзи или прямую ссылку на изображение.',
-      ephemeral: true
+      ephemeral: true,
     });
     return;
   }
@@ -64,7 +63,7 @@ export async function handleStealemojiCommand(
     }
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('✅ Эмодзи добавлен')
       .addFields(
         { name: '😀 Эмодзи', value: `${emoji}`, inline: true },
@@ -76,10 +75,10 @@ export async function handleStealemojiCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("stealemoji", error);
+    logCommandError('stealemoji', error);
     await interaction.reply({
       content: '❌ Не удалось добавить эмодзи. Проверьте ссылку и лимиты сервера.',
-      ephemeral: true
+      ephemeral: true,
     });
   }
 }

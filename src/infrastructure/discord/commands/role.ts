@@ -1,37 +1,29 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const roleCommand = new SlashCommandBuilder()
   .setName('role')
   .setDescription('Добавить или убрать роль у пользователя')
-  .addUserOption(option =>
-    option
-      .setName('user')
-      .setDescription('Пользователь')
-      .setRequired(true)
+  .addUserOption((option) =>
+    option.setName('user').setDescription('Пользователь').setRequired(true)
   )
-  .addRoleOption(option =>
-    option
-      .setName('role')
-      .setDescription('Роль')
-      .setRequired(true)
-  )
-  .addStringOption(option =>
+  .addRoleOption((option) => option.setName('role').setDescription('Роль').setRequired(true))
+  .addStringOption((option) =>
     option
       .setName('action')
       .setDescription('Действие')
       .setRequired(true)
-      .addChoices(
-        { name: 'Добавить', value: 'add' },
-        { name: 'Убрать', value: 'remove' }
-      )
+      .addChoices({ name: 'Добавить', value: 'add' }, { name: 'Убрать', value: 'remove' })
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles);
 
-export async function handleRoleCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleRoleCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   const targetUser = interaction.options.getUser('user', true);
@@ -52,20 +44,29 @@ export async function handleRoleCommand(
   }
 
   if (guildRole.managed) {
-    await interaction.reply({ content: '❌ Эта роль управляется интеграцией и не может быть назначена.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта роль управляется интеграцией и не может быть назначена.',
+      ephemeral: true,
+    });
     return;
   }
 
   const botMember = interaction.guild?.members.me;
   if (botMember && guildRole.position >= botMember.roles.highest.position) {
-    await interaction.reply({ content: '❌ Не могу управлять этой ролью (она выше моей роли).', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Не могу управлять этой ролью (она выше моей роли).',
+      ephemeral: true,
+    });
     return;
   }
 
   try {
     if (action === 'add') {
       if (member.roles.cache.has(role.id)) {
-        await interaction.reply({ content: '❌ У пользователя уже есть эта роль.', ephemeral: true });
+        await interaction.reply({
+          content: '❌ У пользователя уже есть эта роль.',
+          ephemeral: true,
+        });
         return;
       }
       await member.roles.add(guildRole);
@@ -78,7 +79,7 @@ export async function handleRoleCommand(
     }
 
     const embed = new EmbedBuilder()
-      .setColor(action === 'add' ? 0x00FF00 : 0xFF6600)
+      .setColor(action === 'add' ? 0x00ff00 : 0xff6600)
       .setTitle(action === 'add' ? '➕ Роль добавлена' : '➖ Роль убрана')
       .addFields(
         { name: '👤 Пользователь', value: targetUser.tag, inline: true },
@@ -91,7 +92,10 @@ export async function handleRoleCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("role", error);
-    await interaction.reply({ content: '❌ Не удалось изменить роль пользователя.', ephemeral: true });
+    logCommandError('role', error);
+    await interaction.reply({
+      content: '❌ Не удалось изменить роль пользователя.',
+      ephemeral: true,
+    });
   }
 }

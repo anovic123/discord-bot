@@ -1,25 +1,29 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, TextChannel, EmbedBuilder } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  TextChannel,
+  EmbedBuilder,
+} from 'discord.js';
 import { requireAdmin } from '../utils/permissions';
 import { logCommandError } from '../utils/error-handler';
 
 export const unlockCommand = new SlashCommandBuilder()
   .setName('unlock')
   .setDescription('Разблокировать канал (разрешить отправку сообщений)')
-  .addStringOption(option =>
-    option
-      .setName('reason')
-      .setDescription('Причина разблокировки')
-      .setRequired(false)
+  .addStringOption((option) =>
+    option.setName('reason').setDescription('Причина разблокировки').setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels);
 
-export async function handleUnlockCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleUnlockCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!(await requireAdmin(interaction))) return;
 
   if (!(interaction.channel instanceof TextChannel)) {
-    await interaction.reply({ content: '❌ Эта команда работает только в текстовых каналах.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Эта команда работает только в текстовых каналах.',
+      ephemeral: true,
+    });
     return;
   }
 
@@ -31,7 +35,7 @@ export async function handleUnlockCommand(
     });
 
     const embed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(0x00ff00)
       .setTitle('🔓 Канал разблокирован')
       .addFields(
         { name: '📍 Канал', value: `<#${interaction.channel.id}>`, inline: true },
@@ -42,7 +46,7 @@ export async function handleUnlockCommand(
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    logCommandError("unlock", error);
+    logCommandError('unlock', error);
     await interaction.reply({ content: '❌ Не удалось разблокировать канал.', ephemeral: true });
   }
 }

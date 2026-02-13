@@ -12,7 +12,6 @@ docker-compose.yml
 coverage
 *.test.ts
 vitest.config.ts
-game-activity.json
 audit-log.json
 eslint.config.js
 .prettierrc

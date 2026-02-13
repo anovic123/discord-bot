@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, TextChannel, REST, Routes, EmbedBuilder, ActivityType, Presence } from 'discord.js';
+import { Client, GatewayIntentBits, TextChannel, REST, Routes, EmbedBuilder } from 'discord.js';
 import cron from 'node-cron';
 import { Config } from '../../config';
 import { createLogger } from '../logger';
@@ -78,25 +78,45 @@ import { timestampCommand, handleTimestampCommand } from './commands/timestamp';
 import { qrCommand, handleQrCommand } from './commands/qr';
 import { hashCommand, handleHashCommand } from './commands/hash';
 import { translateCommand, handleTranslateCommand } from './commands/translate';
+import { tempbanCommand, handleTempbanCommand } from './commands/tempban';
+import { summaryCommand, handleSummaryCommand } from './commands/summary';
 import { statsTracker } from './utils/stats-tracker';
-import { GameActivityUseCase } from '../../application/game-activity.use-case';
-import { gamestatsCommand, handleGamestatsCommand } from './commands/gamestats';
+import { setServerStatsProvider } from '../health';
 
 interface UseCases {
   getRates: GetRatesUseCase;
   getCrypto: GetCryptoUseCase;
   convert: ConvertUseCase;
-  gameActivity: GameActivityUseCase;
 }
 
 const logger = createLogger('Bot');
 
 const MODERATION_COMMANDS = new Set([
-  'ban', 'unban', 'kick', 'timeout', 'untimeout', 'warn',
-  'purge', 'clear', 'lock', 'unlock', 'hide', 'show',
-  'slowmode', 'slowoff', 'nick', 'nickname', 'setnick',
-  'role', 'voicekick', 'voicemute', 'voiceunmute',
-  'deafen', 'undeafen', 'moveall',
+  'ban',
+  'tempban',
+  'unban',
+  'kick',
+  'timeout',
+  'untimeout',
+  'warn',
+  'purge',
+  'clear',
+  'lock',
+  'unlock',
+  'hide',
+  'show',
+  'slowmode',
+  'slowoff',
+  'nick',
+  'nickname',
+  'setnick',
+  'role',
+  'voicekick',
+  'voicemute',
+  'voiceunmute',
+  'deafen',
+  'undeafen',
+  'moveall',
 ]);
 
 export class DiscordBot {
@@ -111,7 +131,6 @@ export class DiscordBot {
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildPresences,
       ],
     });
 
@@ -123,7 +142,6 @@ export class DiscordBot {
   }
 
   stop(): void {
-    this.useCases.gameActivity.forceSave();
     this.client.destroy();
   }
 
@@ -132,6 +150,7 @@ export class DiscordBot {
       logger.info(`Bot started as ${this.client.user?.tag}`);
       await this.registerCommands();
       this.startCronJob();
+      setServerStatsProvider(() => this.getServerStats());
       await this.sendStartupMessage();
     });
 
@@ -148,7 +167,7 @@ export class DiscordBot {
         return;
       }
 
-      statsTracker.trackCommand(interaction.commandName);
+      statsTracker.trackCommand(interaction.commandName, interaction.user.id);
 
       if (MODERATION_COMMANDS.has(interaction.commandName)) {
         const targetUser = interaction.options.getUser('user');
@@ -165,266 +184,232 @@ export class DiscordBot {
       }
 
       try {
-      switch (interaction.commandName) {
-        case 'currency':
-          await handleCurrencyCommand(interaction, this.useCases.getRates);
-          break;
-        case 'crypto':
-          await handleCryptoCommand(interaction, this.useCases.getCrypto);
-          break;
-        case 'convert':
-          await handleConvertCommand(interaction, this.useCases.convert);
-          break;
-        case 'serverinfo':
-          await handleServerInfoCommand(interaction);
-          break;
-        case 'userinfo':
-          await handleUserInfoCommand(interaction);
-          break;
-        case 'avatar':
-          await handleAvatarCommand(interaction);
-          break;
-        case 'ping':
-          await handlePingCommand(interaction);
-          break;
-        case 'clear':
-          await handleClearCommand(interaction);
-          break;
-        case 'poll':
-          await handlePollCommand(interaction);
-          break;
-                case 'timeout':
-          await handleTimeoutCommand(interaction);
-          break;
-        case 'kick':
-          await handleKickCommand(interaction);
-          break;
-        case 'ban':
-          await handleBanCommand(interaction);
-          break;
-        case 'slowmode':
-          await handleSlowmodeCommand(interaction);
-          break;
-        case 'help':
-          await handleHelpCommand(interaction);
-          break;
-        case 'unban':
-          await handleUnbanCommand(interaction);
-          break;
-        case 'untimeout':
-          await handleUntimeoutCommand(interaction);
-          break;
-        case 'lock':
-          await handleLockCommand(interaction);
-          break;
-        case 'unlock':
-          await handleUnlockCommand(interaction);
-          break;
-        case 'nick':
-          await handleNickCommand(interaction);
-          break;
-        case 'role':
-          await handleRoleCommand(interaction);
-          break;
-        case 'warn':
-          await handleWarnCommand(interaction);
-          break;
-        case 'announce':
-          await handleAnnounceCommand(interaction);
-          break;
-        case 'purge':
-          await handlePurgeCommand(interaction);
-          break;
-        case 'moveall':
-          await handleMoveallCommand(interaction);
-          break;
-        case 'slowoff':
-          await handleSlowoffCommand(interaction);
-          break;
-        case 'roleinfo':
-          await handleRoleinfoCommand(interaction);
-          break;
-        case 'banlist':
-          await handleBanlistCommand(interaction);
-          break;
-        case 'hide':
-          await handleHideCommand(interaction);
-          break;
-        case 'show':
-          await handleShowCommand(interaction);
-          break;
-        case 'channelinfo':
-          await handleChannelinfoCommand(interaction);
-          break;
-        case 'emojis':
-          await handleEmojisCommand(interaction);
-          break;
-        case 'stealemoji':
-          await handleStealemojiCommand(interaction);
-          break;
-        case 'setnick':
-          await handleSetnickCommand(interaction);
-          break;
-        case 'embed':
-          await handleEmbedCommand(interaction);
-          break;
-        case 'roles':
-          await handleRolesCommand(interaction);
-          break;
-        case 'invites':
-          await handleInvitesCommand(interaction);
-          break;
-        case 'members':
-          await handleMembersCommand(interaction);
-          break;
-        case 'boosters':
-          await handleBoostersCommand(interaction);
-          break;
-        case 'banner':
-          await handleBannerCommand(interaction);
-          break;
-        case 'say':
-          await handleSayCommand(interaction);
-          break;
-        case 'dm':
-          await handleDmCommand(interaction);
-          break;
-        case 'voicekick':
-          await handleVoicekickCommand(interaction);
-          break;
-        case 'voicemute':
-          await handleVoicemuteCommand(interaction);
-          break;
-        case 'voiceunmute':
-          await handleVoiceunmuteCommand(interaction);
-          break;
-        case 'deafen':
-          await handleDeafenCommand(interaction);
-          break;
-        case 'undeafen':
-          await handleUndeafenCommand(interaction);
-          break;
-        case 'firstmessage':
-          await handleFirstmessageCommand(interaction);
-          break;
-        case 'color':
-          await handleColorCommand(interaction);
-          break;
-        case 'math':
-          await handleMathCommand(interaction);
-          break;
-        case 'base64':
-          await handleBase64Command(interaction);
-          break;
-        case 'reverse':
-          await handleReverseCommand(interaction);
-          break;
-        case 'jumbo':
-          await handleJumboCommand(interaction);
-          break;
-        case 'whois':
-          await handleWhoisCommand(interaction);
-          break;
-        case 'serverbanner':
-          await handleServerbannerCommand(interaction);
-          break;
-        case 'servericon':
-          await handleServericonCommand(interaction);
-          break;
-        case 'nickname':
-          await handleNicknameCommand(interaction);
-          break;
-        case 'random':
-          await handleRandomCommand(interaction);
-          break;
-        case 'coinflip':
-          await handleCoinflipCommand(interaction);
-          break;
-        case '8ball':
-          await handleEightballCommand(interaction);
-          break;
-        case 'reminder':
-          await handleReminderCommand(interaction);
-          break;
-        case 'uptime':
-          await handleUptimeCommand(interaction);
-          break;
-        case 'stats':
-          await handleStatsCommand(interaction);
-          break;
-        case 'servertime':
-          await handleServertimeCommand(interaction);
-          break;
-        case 'roll':
-          await handleRollCommand(interaction);
-          break;
-        case 'choose':
-          await handleChooseCommand(interaction);
-          break;
-        case 'weather':
-          await handleWeatherCommand(interaction);
-          break;
-        case 'password':
-          await handlePasswordCommand(interaction);
-          break;
-        case 'timestamp':
-          await handleTimestampCommand(interaction);
-          break;
-        case 'qr':
-          await handleQrCommand(interaction);
-          break;
-        case 'hash':
-          await handleHashCommand(interaction);
-          break;
-        case 'translate':
-          await handleTranslateCommand(interaction);
-          break;
-        case 'gamestats':
-          await handleGamestatsCommand(interaction, this.useCases.gameActivity);
-          break;
-      }
+        switch (interaction.commandName) {
+          case 'currency':
+            await handleCurrencyCommand(interaction, this.useCases.getRates);
+            break;
+          case 'crypto':
+            await handleCryptoCommand(interaction, this.useCases.getCrypto);
+            break;
+          case 'convert':
+            await handleConvertCommand(interaction, this.useCases.convert);
+            break;
+          case 'serverinfo':
+            await handleServerInfoCommand(interaction);
+            break;
+          case 'userinfo':
+            await handleUserInfoCommand(interaction);
+            break;
+          case 'avatar':
+            await handleAvatarCommand(interaction);
+            break;
+          case 'ping':
+            await handlePingCommand(interaction);
+            break;
+          case 'clear':
+            await handleClearCommand(interaction);
+            break;
+          case 'poll':
+            await handlePollCommand(interaction);
+            break;
+          case 'timeout':
+            await handleTimeoutCommand(interaction);
+            break;
+          case 'kick':
+            await handleKickCommand(interaction);
+            break;
+          case 'ban':
+            await handleBanCommand(interaction);
+            break;
+          case 'slowmode':
+            await handleSlowmodeCommand(interaction);
+            break;
+          case 'help':
+            await handleHelpCommand(interaction);
+            break;
+          case 'unban':
+            await handleUnbanCommand(interaction);
+            break;
+          case 'untimeout':
+            await handleUntimeoutCommand(interaction);
+            break;
+          case 'lock':
+            await handleLockCommand(interaction);
+            break;
+          case 'unlock':
+            await handleUnlockCommand(interaction);
+            break;
+          case 'nick':
+            await handleNickCommand(interaction);
+            break;
+          case 'role':
+            await handleRoleCommand(interaction);
+            break;
+          case 'warn':
+            await handleWarnCommand(interaction);
+            break;
+          case 'announce':
+            await handleAnnounceCommand(interaction);
+            break;
+          case 'purge':
+            await handlePurgeCommand(interaction);
+            break;
+          case 'moveall':
+            await handleMoveallCommand(interaction);
+            break;
+          case 'slowoff':
+            await handleSlowoffCommand(interaction);
+            break;
+          case 'roleinfo':
+            await handleRoleinfoCommand(interaction);
+            break;
+          case 'banlist':
+            await handleBanlistCommand(interaction);
+            break;
+          case 'hide':
+            await handleHideCommand(interaction);
+            break;
+          case 'show':
+            await handleShowCommand(interaction);
+            break;
+          case 'channelinfo':
+            await handleChannelinfoCommand(interaction);
+            break;
+          case 'emojis':
+            await handleEmojisCommand(interaction);
+            break;
+          case 'stealemoji':
+            await handleStealemojiCommand(interaction);
+            break;
+          case 'setnick':
+            await handleSetnickCommand(interaction);
+            break;
+          case 'embed':
+            await handleEmbedCommand(interaction);
+            break;
+          case 'roles':
+            await handleRolesCommand(interaction);
+            break;
+          case 'invites':
+            await handleInvitesCommand(interaction);
+            break;
+          case 'members':
+            await handleMembersCommand(interaction);
+            break;
+          case 'boosters':
+            await handleBoostersCommand(interaction);
+            break;
+          case 'banner':
+            await handleBannerCommand(interaction);
+            break;
+          case 'say':
+            await handleSayCommand(interaction);
+            break;
+          case 'dm':
+            await handleDmCommand(interaction);
+            break;
+          case 'voicekick':
+            await handleVoicekickCommand(interaction);
+            break;
+          case 'voicemute':
+            await handleVoicemuteCommand(interaction);
+            break;
+          case 'voiceunmute':
+            await handleVoiceunmuteCommand(interaction);
+            break;
+          case 'deafen':
+            await handleDeafenCommand(interaction);
+            break;
+          case 'undeafen':
+            await handleUndeafenCommand(interaction);
+            break;
+          case 'firstmessage':
+            await handleFirstmessageCommand(interaction);
+            break;
+          case 'color':
+            await handleColorCommand(interaction);
+            break;
+          case 'math':
+            await handleMathCommand(interaction);
+            break;
+          case 'base64':
+            await handleBase64Command(interaction);
+            break;
+          case 'reverse':
+            await handleReverseCommand(interaction);
+            break;
+          case 'jumbo':
+            await handleJumboCommand(interaction);
+            break;
+          case 'whois':
+            await handleWhoisCommand(interaction);
+            break;
+          case 'serverbanner':
+            await handleServerbannerCommand(interaction);
+            break;
+          case 'servericon':
+            await handleServericonCommand(interaction);
+            break;
+          case 'nickname':
+            await handleNicknameCommand(interaction);
+            break;
+          case 'random':
+            await handleRandomCommand(interaction);
+            break;
+          case 'coinflip':
+            await handleCoinflipCommand(interaction);
+            break;
+          case '8ball':
+            await handleEightballCommand(interaction);
+            break;
+          case 'reminder':
+            await handleReminderCommand(interaction);
+            break;
+          case 'uptime':
+            await handleUptimeCommand(interaction);
+            break;
+          case 'stats':
+            await handleStatsCommand(interaction);
+            break;
+          case 'servertime':
+            await handleServertimeCommand(interaction);
+            break;
+          case 'roll':
+            await handleRollCommand(interaction);
+            break;
+          case 'choose':
+            await handleChooseCommand(interaction);
+            break;
+          case 'weather':
+            await handleWeatherCommand(interaction);
+            break;
+          case 'password':
+            await handlePasswordCommand(interaction);
+            break;
+          case 'timestamp':
+            await handleTimestampCommand(interaction);
+            break;
+          case 'qr':
+            await handleQrCommand(interaction);
+            break;
+          case 'hash':
+            await handleHashCommand(interaction);
+            break;
+          case 'translate':
+            await handleTranslateCommand(interaction);
+            break;
+          case 'tempban':
+            await handleTempbanCommand(interaction);
+            break;
+          case 'summary':
+            await handleSummaryCommand(interaction);
+            break;
+        }
       } catch (error) {
         statsTracker.trackError();
         logger.error(`Command error [${interaction.commandName}]`, error);
       }
     });
-
-    this.client.on('presenceUpdate', (oldPresence, newPresence) => {
-      this.handlePresenceUpdate(oldPresence, newPresence);
-    });
-  }
-
-  private handlePresenceUpdate(oldPresence: Presence | null, newPresence: Presence): void {
-    const userId = newPresence.userId;
-
-    const oldGames = this.getGameActivities(oldPresence);
-    const newGames = this.getGameActivities(newPresence);
-
-    for (const gameName of oldGames) {
-      if (!newGames.has(gameName)) {
-        this.useCases.gameActivity.endSession(userId, gameName);
-      }
-    }
-
-    for (const gameName of newGames) {
-      if (!oldGames.has(gameName)) {
-        this.useCases.gameActivity.startSession(userId, gameName);
-      }
-    }
-  }
-
-  private getGameActivities(presence: Presence | null): Set<string> {
-    const games = new Set<string>();
-
-    if (!presence?.activities) return games;
-
-    for (const activity of presence.activities) {
-      if (activity.type === ActivityType.Playing && activity.name) {
-        games.add(activity.name);
-      }
-    }
-
-    return games;
   }
 
   private async registerCommands(): Promise<void> {
@@ -440,7 +425,7 @@ export class DiscordBot {
       pingCommand.toJSON(),
       clearCommand.toJSON(),
       pollCommand.toJSON(),
-            timeoutCommand.toJSON(),
+      timeoutCommand.toJSON(),
       kickCommand.toJSON(),
       banCommand.toJSON(),
       slowmodeCommand.toJSON(),
@@ -502,14 +487,14 @@ export class DiscordBot {
       qrCommand.toJSON(),
       hashCommand.toJSON(),
       translateCommand.toJSON(),
-      gamestatsCommand.toJSON(),
+      tempbanCommand.toJSON(),
+      summaryCommand.toJSON(),
     ];
 
     try {
-      await rest.put(
-        Routes.applicationGuildCommands(this.client.user!.id, this.config.guildId),
-        { body: commands }
-      );
+      await rest.put(Routes.applicationGuildCommands(this.client.user!.id, this.config.guildId), {
+        body: commands,
+      });
       logger.info('Slash commands registered');
     } catch (error) {
       logger.error('Failed to register commands', error);
@@ -540,9 +525,70 @@ export class DiscordBot {
       await channel.send(currencyMessage);
       await channel.send(cryptoMessage);
 
+      await this.sendDailyStatsReport(channel);
+
       logger.info(`Daily rates sent at ${new Date().toLocaleTimeString('uk-UA')}`);
     } catch (error) {
       logger.error('Failed to send daily rates', error);
+    }
+  }
+
+  private async sendDailyStatsReport(channel: TextChannel): Promise<void> {
+    try {
+      const guild = this.client.guilds.cache.get(this.config.guildId);
+
+      if (!guild) {
+        logger.warn('Daily stats report skipped: guild not found');
+        return;
+      }
+
+      const onlineMembers = guild.members.cache.filter(
+        (m) => m.presence?.status && m.presence.status !== 'offline'
+      ).size;
+
+      const voiceMembers = guild.voiceStates.cache.filter((vs) => vs.channelId !== null).size;
+
+      const textChannels = guild.channels.cache.filter((c) => c.isTextBased()).size;
+      const voiceChannels = guild.channels.cache.filter((c) => c.isVoiceBased()).size;
+
+      const embed = new EmbedBuilder()
+        .setColor(0x5865f2)
+        .setTitle('📊 Ежедневный отчёт')
+        .setDescription(`Состояние сервера **${guild.name}**`)
+        .addFields(
+          {
+            name: '👥 Участники',
+            value: [
+              `**Всего:** ${guild.memberCount}`,
+              `**Онлайн:** ${onlineMembers}`,
+              `**В голосовых:** ${voiceMembers}`,
+            ].join('\n'),
+            inline: true,
+          },
+          {
+            name: '💬 Каналы',
+            value: [
+              `**Текстовых:** ${textChannels}`,
+              `**Голосовых:** ${voiceChannels}`,
+              `**Всего:** ${guild.channels.cache.size}`,
+            ].join('\n'),
+            inline: true,
+          },
+          {
+            name: '🔧 Сервер',
+            value: [
+              `**Бусты:** ${guild.premiumSubscriptionCount || 0} (уровень ${guild.premiumTier})`,
+              `**Ролей:** ${guild.roles.cache.size}`,
+              `**Эмодзи:** ${guild.emojis.cache.size}`,
+            ].join('\n'),
+            inline: true,
+          }
+        )
+        .setTimestamp();
+
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      logger.error('Failed to send daily stats report', error);
     }
   }
 
@@ -557,7 +603,9 @@ export class DiscordBot {
       try {
         channel = await this.client.channels.fetch(this.config.welcomeChannelId);
       } catch {
-        logger.warn(`Startup message skipped: channel ${this.config.welcomeChannelId} not accessible`);
+        logger.warn(
+          `Startup message skipped: channel ${this.config.welcomeChannelId} not accessible`
+        );
         return;
       }
 
@@ -570,7 +618,7 @@ export class DiscordBot {
       const totalCommands = 64;
 
       const embed = new EmbedBuilder()
-        .setColor(0x00FF00)
+        .setColor(0x00ff00)
         .setTitle('🟢 Бот онлайн!')
         .setDescription(`**${this.client.user?.username}** успешно запущен и готов к работе!`)
         .setThumbnail(this.client.user?.displayAvatarURL() || null)
@@ -589,5 +637,45 @@ export class DiscordBot {
     } catch (error) {
       logger.error('Failed to send startup message', error);
     }
+  }
+
+  private getServerStats(): object {
+    const guild = this.client.guilds.cache.get(this.config.guildId);
+
+    if (!guild) {
+      return { error: 'Guild not found' };
+    }
+
+    const onlineMembers = guild.members.cache.filter(
+      (m) => m.presence?.status && m.presence.status !== 'offline'
+    ).size;
+
+    const voiceMembers = guild.voiceStates.cache.filter((vs) => vs.channelId !== null).size;
+
+    const textChannels = guild.channels.cache.filter((c) => c.isTextBased()).size;
+    const voiceChannels = guild.channels.cache.filter((c) => c.isVoiceBased()).size;
+
+    return {
+      guild: {
+        name: guild.name,
+        id: guild.id,
+        memberCount: guild.memberCount,
+        onlineMembers,
+        voiceMembers,
+      },
+      channels: {
+        text: textChannels,
+        voice: voiceChannels,
+        total: guild.channels.cache.size,
+      },
+      boosts: {
+        count: guild.premiumSubscriptionCount || 0,
+        tier: guild.premiumTier,
+      },
+      roles: guild.roles.cache.size,
+      emojis: guild.emojis.cache.size,
+      createdAt: guild.createdAt.toISOString(),
+      timestamp: new Date().toISOString(),
+    };
   }
 }

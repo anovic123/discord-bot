@@ -3,20 +3,20 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const passwordCommand = new SlashCommandBuilder()
   .setName('password')
   .setDescription('Сгенерировать надёжный пароль')
-  .addIntegerOption(option =>
-    option.setName('length')
+  .addIntegerOption((option) =>
+    option
+      .setName('length')
       .setDescription('Длина пароля (8-128)')
       .setRequired(false)
       .setMinValue(8)
-      .setMaxValue(128))
-  .addBooleanOption(option =>
-    option.setName('symbols')
-      .setDescription('Включить символы (!@#$...)')
-      .setRequired(false))
-  .addBooleanOption(option =>
-    option.setName('numbers')
-      .setDescription('Включить цифры')
-      .setRequired(false));
+      .setMaxValue(128)
+  )
+  .addBooleanOption((option) =>
+    option.setName('symbols').setDescription('Включить символы (!@#$...)').setRequired(false)
+  )
+  .addBooleanOption((option) =>
+    option.setName('numbers').setDescription('Включить цифры').setRequired(false)
+  );
 
 export async function handlePasswordCommand(
   interaction: ChatInputCommandInteraction
@@ -39,13 +39,17 @@ export async function handlePasswordCommand(
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
-  const strength = length >= 20 ? 'Очень надёжный' :
-                   length >= 16 ? 'Надёжный' :
-                   length >= 12 ? 'Средний' : 'Слабый';
+  const strength =
+    length >= 20
+      ? 'Очень надёжный'
+      : length >= 16
+        ? 'Надёжный'
+        : length >= 12
+          ? 'Средний'
+          : 'Слабый';
 
-  const strengthColor = length >= 20 ? 0x00FF00 :
-                        length >= 16 ? 0x90EE90 :
-                        length >= 12 ? 0xFFFF00 : 0xFF0000;
+  const strengthColor =
+    length >= 20 ? 0x00ff00 : length >= 16 ? 0x90ee90 : length >= 12 ? 0xffff00 : 0xff0000;
 
   const embed = new EmbedBuilder()
     .setColor(strengthColor)
@@ -54,7 +58,11 @@ export async function handlePasswordCommand(
     .addFields(
       { name: '📏 Длина', value: `${length}`, inline: true },
       { name: '💪 Надёжность', value: strength, inline: true },
-      { name: '⚙️ Параметры', value: `Символы: ${includeSymbols ? '✅' : '❌'} | Цифры: ${includeNumbers ? '✅' : '❌'}`, inline: false }
+      {
+        name: '⚙️ Параметры',
+        value: `Символы: ${includeSymbols ? '✅' : '❌'} | Цифры: ${includeNumbers ? '✅' : '❌'}`,
+        inline: false,
+      }
     )
     .setFooter({ text: 'Сообщение видно только вам' })
     .setTimestamp();

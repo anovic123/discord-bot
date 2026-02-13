@@ -3,16 +3,9 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const jumboCommand = new SlashCommandBuilder()
   .setName('jumbo')
   .setDescription('Показать эмодзи в большом размере')
-  .addStringOption(option =>
-    option
-      .setName('emoji')
-      .setDescription('Эмодзи')
-      .setRequired(true)
-  );
+  .addStringOption((option) => option.setName('emoji').setDescription('Эмодзи').setRequired(true));
 
-export async function handleJumboCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleJumboCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const emojiInput = interaction.options.getString('emoji', true);
 
   const customEmojiMatch = emojiInput.match(/<(a)?:(\w+):(\d+)>/);
@@ -29,7 +22,7 @@ export async function handleJumboCommand(
   const emojiUrl = `https://cdn.discordapp.com/emojis/${emojiId}.${extension}?size=512`;
 
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle(`😀 ${emojiName}`)
     .setImage(emojiUrl)
     .addFields(

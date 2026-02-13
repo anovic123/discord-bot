@@ -6,13 +6,13 @@ export const helpCommand = new SlashCommandBuilder()
   .setName('help')
   .setDescription('Показать все доступные команды');
 
-export async function handleHelpCommand(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handleHelpCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(0x5865f2)
     .setTitle('📚 Список команд')
-    .setDescription(`Все доступные команды бота\n${ADMIN_BADGE} — команда только для администраторов`)
+    .setDescription(
+      `Все доступные команды бота\n${ADMIN_BADGE} — команда только для администраторов`
+    )
     .addFields(
       {
         name: '💰 Финансы',
@@ -35,6 +35,7 @@ export async function handleHelpCommand(
           '`/members` — Статистика участников',
           '`/boosters` — Список бустеров',
           '`/ping` — Задержка бота',
+          '`/summary <period>` — Выжимка чата',
         ].join('\n'),
       },
       {
@@ -64,6 +65,7 @@ export async function handleHelpCommand(
         name: `🔨 Баны ${ADMIN_BADGE}`,
         value: [
           '`/ban <user> [reason]` — Забанить пользователя',
+          '`/tempban <user> <duration> [reason]` — Временный бан',
           '`/unban <user_id>` — Разбанить пользователя',
           '`/banlist [page]` — Список забаненных',
         ].join('\n'),
@@ -96,14 +98,6 @@ export async function handleHelpCommand(
           '`/roleinfo <role>` — Информация о роли',
           '`/emojis [page]` — Список эмодзи сервера',
           `\`/stealemoji <emoji> <name>\` — Добавить эмодзи ${ADMIN_BADGE}`,
-        ].join('\n'),
-      },
-      {
-        name: '🎮 Игровая активность',
-        value: [
-          '`/gamestats user [user]` — Статистика игр пользователя',
-          '`/gamestats top` — Топ игр на сервере',
-          '`/gamestats leaderboard <game>` — Лидерборд по игре',
         ].join('\n'),
       },
       {
