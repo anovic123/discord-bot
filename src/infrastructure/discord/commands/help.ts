@@ -158,6 +158,10 @@ export async function handleHelpCommand(interaction: ChatInputCommandInteraction
           '`/hash <text> [algorithm]` — Хеширование',
           '`/translate <text> <to>` — Перевод текста',
         ].join('\n'),
+      },
+      {
+        name: `⚙️ Настройки ${ADMIN_BADGE}`,
+        value: ['`/settings` — Управление настройками бота'].join('\n'),
       }
     )
     .setFooter({ text: `Запрос от ${interaction.user.tag}` })

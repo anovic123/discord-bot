@@ -1,6 +1,6 @@
 # Discord Bot
 
-Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI-выжимкой, переводами и 70+ slash командами.
+Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI-выжимкой, переводами, настройками через Discord UI и 70+ slash командами.
 
 ## Установка
 
@@ -49,6 +49,8 @@ docker-compose up -d
 2. Курсы криптовалют (BTC, ETH, SOL и др.)
 3. Статистику сервера — участники, онлайн, голосовые, каналы, бусты, роли, эмодзи
 
+Секции можно включать/выключать через `/settings`.
+
 ## HTTP эндпоинты
 
 | Эндпоинт | Описание |
@@ -59,7 +61,7 @@ docker-compose up -d
 ## Команды бота
 
 ### Модерация
-`/ban`, `/tempban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`
+`/ban`, `/tempban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`, `/settings`
 
 ### Информация
 `/userinfo`, `/whois`, `/serverinfo`, `/channelinfo`, `/roleinfo`, `/roles`, `/members`, `/invites`, `/boosters`, `/emojis`, `/stats`, `/uptime`, `/servertime`, `/summary`

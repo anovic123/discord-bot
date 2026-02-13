@@ -42,6 +42,9 @@ export const ADMIN_COMMANDS: readonly string[] = [
   'say',
   'embed',
   'stealemoji',
+
+  // Настройки
+  'settings',
 ] as const;
 
 export function isAdminCommand(commandName: string): boolean {

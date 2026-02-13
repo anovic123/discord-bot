@@ -5,3 +5,4 @@ node_modules/
 dist/
 coverage/
 audit-log.json
+guild-settings.json

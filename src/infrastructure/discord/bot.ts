@@ -83,6 +83,13 @@ import { summaryCommand, handleSummaryCommand } from './commands/summary';
 import { aiSummaryCommand, handleAiSummaryCommand } from './commands/ai-summary';
 import { askCommand, handleAskCommand } from './commands/ask';
 import { roastCommand, handleRoastCommand } from './commands/roast';
+import {
+  settingsCommand,
+  handleSettingsCommand,
+  handleSettingsButton,
+  handleSettingsSelectMenu,
+} from './commands/settings';
+import { guildSettings } from '../settings';
 import { statsTracker } from './utils/stats-tracker';
 import { setServerStatsProvider } from '../health';
 
@@ -158,6 +165,24 @@ export class DiscordBot {
     });
 
     this.client.on('interactionCreate', async (interaction) => {
+      if (interaction.isButton() && interaction.customId.startsWith('settings_')) {
+        try {
+          await handleSettingsButton(interaction);
+        } catch (error) {
+          logger.error('Settings button error', error);
+        }
+        return;
+      }
+
+      if (interaction.isStringSelectMenu() && interaction.customId === 'settings_category') {
+        try {
+          await handleSettingsSelectMenu(interaction);
+        } catch (error) {
+          logger.error('Settings select menu error', error);
+        }
+        return;
+      }
+
       if (!interaction.isChatInputCommand()) return;
 
       const cooldownCheck = cooldownManager.check(interaction.user.id, interaction.commandName);
@@ -173,17 +198,21 @@ export class DiscordBot {
       statsTracker.trackCommand(interaction.commandName, interaction.user.id);
 
       if (MODERATION_COMMANDS.has(interaction.commandName)) {
-        const targetUser = interaction.options.getUser('user');
-        auditLogger.log({
-          action: interaction.commandName,
-          moderatorId: interaction.user.id,
-          moderatorTag: interaction.user.tag,
-          targetId: targetUser?.id,
-          targetTag: targetUser?.tag,
-          guildId: interaction.guildId || '',
-          channelId: interaction.channelId,
-          reason: interaction.options.getString('reason') || undefined,
-        });
+        const guildId = interaction.guildId || '';
+        const modSettings = guildSettings.getSettings(guildId);
+        if (modSettings.moderation.auditLog) {
+          const targetUser = interaction.options.getUser('user');
+          auditLogger.log({
+            action: interaction.commandName,
+            moderatorId: interaction.user.id,
+            moderatorTag: interaction.user.tag,
+            targetId: targetUser?.id,
+            targetTag: targetUser?.tag,
+            guildId,
+            channelId: interaction.channelId,
+            reason: interaction.options.getString('reason') || undefined,
+          });
+        }
       }
 
       try {
@@ -416,6 +445,9 @@ export class DiscordBot {
           case 'roast':
             await handleRoastCommand(interaction);
             break;
+          case 'settings':
+            await handleSettingsCommand(interaction);
+            break;
         }
       } catch (error) {
         statsTracker.trackError();
@@ -504,6 +536,7 @@ export class DiscordBot {
       aiSummaryCommand.toJSON(),
       askCommand.toJSON(),
       roastCommand.toJSON(),
+      settingsCommand.toJSON(),
     ];
 
     try {
@@ -532,15 +565,23 @@ export class DiscordBot {
         return;
       }
 
+      const settings = guildSettings.getSettings(this.config.guildId);
+
       const [currencyMessage, cryptoMessage] = await Promise.all([
-        this.useCases.getRates.executeWithGreeting(),
-        this.useCases.getCrypto.execute(),
+        settings.dailyReport.currencyRates
+          ? this.useCases.getRates.executeWithGreeting()
+          : null,
+        settings.dailyReport.cryptoRates
+          ? this.useCases.getCrypto.execute()
+          : null,
       ]);
 
-      await channel.send(currencyMessage);
-      await channel.send(cryptoMessage);
+      if (currencyMessage) await channel.send(currencyMessage);
+      if (cryptoMessage) await channel.send(cryptoMessage);
 
-      await this.sendDailyStatsReport(channel);
+      if (settings.dailyReport.serverStats) {
+        await this.sendDailyStatsReport(channel);
+      }
 
       logger.info(`Daily rates sent at ${new Date().toLocaleTimeString('uk-UA')}`);
     } catch (error) {
@@ -613,6 +654,12 @@ export class DiscordBot {
       return;
     }
 
+    const settings = guildSettings.getSettings(this.config.guildId);
+    if (!settings.welcome.startupMessage) {
+      logger.debug('Startup message skipped: disabled in settings');
+      return;
+    }
+
     try {
       let channel;
       try {
@@ -630,7 +677,7 @@ export class DiscordBot {
       }
 
       const guild = this.client.guilds.cache.get(this.config.guildId);
-      const totalCommands = 67;
+      const totalCommands = 68;
 
       const embed = new EmbedBuilder()
         .setColor(0x00ff00)
