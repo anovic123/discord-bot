@@ -1,6 +1,6 @@
 # Discord Bot
 
-Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, переводами и 70+ slash командами.
+Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI-выжимкой, переводами и 70+ slash командами.
 
 ## Установка
 
@@ -24,6 +24,7 @@ npm install
 | `TIMEZONE` | Часовой пояс (по умолчанию: `Europe/Kyiv`) | Нет |
 | `LOG_LEVEL` | Уровень логирования: `debug`, `info`, `warn`, `error` (по умолчанию: `info`) | Нет |
 | `OPENWEATHER_API_KEY` |  API ключ OpenWeather. Без него команды погоды не работают | Нет |
+| `GROQ_API_KEY` | API ключ Groq. Без него AI-команды (`/ai-summary`, `/ask`, `/roast`) не работают | Нет |
 
 ## Запуск
 
@@ -74,6 +75,9 @@ docker-compose up -d
 
 ### Текст и кодирование
 `/math`, `/base64`, `/reverse`, `/jumbo`, `/color`, `/password`, `/hash`, `/say`, `/embed`, `/stealemoji`
+
+### AI (Groq)
+`/ai-summary`, `/ask`, `/roast`
 
 ### Прочее
 `/ping`, `/help`

@@ -142,6 +142,14 @@ export async function handleHelpCommand(interaction: ChatInputCommandInteraction
         ].join('\n'),
       },
       {
+        name: '🤖 AI (Groq)',
+        value: [
+          '`/ai-summary <period>` — AI выжимка чата',
+          '`/ask <question>` — Задать вопрос AI',
+          '`/roast <user>` — Рофл-описание пользователя',
+        ].join('\n'),
+      },
+      {
         name: '🛠️ Генераторы',
         value: [
           '`/password [length]` — Генератор паролей',

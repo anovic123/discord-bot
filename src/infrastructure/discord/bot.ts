@@ -80,6 +80,9 @@ import { hashCommand, handleHashCommand } from './commands/hash';
 import { translateCommand, handleTranslateCommand } from './commands/translate';
 import { tempbanCommand, handleTempbanCommand } from './commands/tempban';
 import { summaryCommand, handleSummaryCommand } from './commands/summary';
+import { aiSummaryCommand, handleAiSummaryCommand } from './commands/ai-summary';
+import { askCommand, handleAskCommand } from './commands/ask';
+import { roastCommand, handleRoastCommand } from './commands/roast';
 import { statsTracker } from './utils/stats-tracker';
 import { setServerStatsProvider } from '../health';
 
@@ -404,6 +407,15 @@ export class DiscordBot {
           case 'summary':
             await handleSummaryCommand(interaction);
             break;
+          case 'ai-summary':
+            await handleAiSummaryCommand(interaction);
+            break;
+          case 'ask':
+            await handleAskCommand(interaction);
+            break;
+          case 'roast':
+            await handleRoastCommand(interaction);
+            break;
         }
       } catch (error) {
         statsTracker.trackError();
@@ -489,6 +501,9 @@ export class DiscordBot {
       translateCommand.toJSON(),
       tempbanCommand.toJSON(),
       summaryCommand.toJSON(),
+      aiSummaryCommand.toJSON(),
+      askCommand.toJSON(),
+      roastCommand.toJSON(),
     ];
 
     try {
@@ -615,7 +630,7 @@ export class DiscordBot {
       }
 
       const guild = this.client.guilds.cache.get(this.config.guildId);
-      const totalCommands = 64;
+      const totalCommands = 67;
 
       const embed = new EmbedBuilder()
         .setColor(0x00ff00)
