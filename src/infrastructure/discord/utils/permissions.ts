@@ -45,6 +45,8 @@ export const ADMIN_COMMANDS: readonly string[] = [
 
   // Настройки
   'settings',
+  'welcome-message',
+  'toxic-mode',
 ] as const;
 
 export function isAdminCommand(commandName: string): boolean {

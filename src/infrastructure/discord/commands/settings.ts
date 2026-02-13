@@ -30,6 +30,7 @@ const SETTING_LABELS: Record<string, Record<string, string>> = {
   },
   welcome: {
     startupMessage: '🟢 Сообщение при запуске',
+    welcomeMessage: '👋 Приветствие новых участников',
   },
   moderation: {
     auditLog: '📋 Аудит лог',

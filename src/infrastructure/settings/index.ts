@@ -10,12 +10,27 @@ export interface DailyReportSettings {
   serverStats: boolean;
 }
 
+export interface WelcomeMessageConfig {
+  enabled: boolean;
+  title: string;
+  description: string;
+  color: number;
+}
+
 export interface WelcomeSettings {
   startupMessage: boolean;
+  welcomeMessage: boolean;
 }
 
 export interface ModerationSettings {
   auditLog: boolean;
+}
+
+export interface ToxicModeSettings {
+  enabled: boolean;
+  channelId: string;
+  frequencyMinutes: number;
+  maxPerDay: number;
 }
 
 export interface GuildSettings {
@@ -23,6 +38,8 @@ export interface GuildSettings {
   dailyReport: DailyReportSettings;
   welcome: WelcomeSettings;
   moderation: ModerationSettings;
+  welcomeMessage: WelcomeMessageConfig;
+  toxicMode: ToxicModeSettings;
   updatedAt: string;
   updatedBy: string;
 }
@@ -35,9 +52,22 @@ const DEFAULT_SETTINGS: Omit<GuildSettings, 'guildId' | 'updatedAt' | 'updatedBy
   },
   welcome: {
     startupMessage: true,
+    welcomeMessage: true,
   },
   moderation: {
     auditLog: true,
+  },
+  welcomeMessage: {
+    enabled: true,
+    title: 'Добро пожаловать!',
+    description: 'Привет, {user}! Добро пожаловать на **{server}**! Ты {memberCount}-й участник.',
+    color: 0x57f287,
+  },
+  toxicMode: {
+    enabled: false,
+    channelId: '',
+    frequencyMinutes: 15,
+    maxPerDay: 20,
   },
 };
 
@@ -83,6 +113,8 @@ class GuildSettingsManager {
       dailyReport?: Partial<DailyReportSettings>;
       welcome?: Partial<WelcomeSettings>;
       moderation?: Partial<ModerationSettings>;
+      welcomeMessage?: Partial<WelcomeMessageConfig>;
+      toxicMode?: Partial<ToxicModeSettings>;
     },
     userId: string
   ): GuildSettings {
@@ -93,6 +125,8 @@ class GuildSettingsManager {
       dailyReport: { ...current.dailyReport, ...partial.dailyReport },
       welcome: { ...current.welcome, ...partial.welcome },
       moderation: { ...current.moderation, ...partial.moderation },
+      welcomeMessage: { ...current.welcomeMessage, ...partial.welcomeMessage },
+      toxicMode: { ...current.toxicMode, ...partial.toxicMode },
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
     };
@@ -100,6 +134,14 @@ class GuildSettingsManager {
     this.save(guildId, updated);
     logger.info(`Settings updated for guild ${guildId} by ${userId}`);
     return updated;
+  }
+
+  getWelcomeMessage(guildId: string): WelcomeMessageConfig {
+    return this.getSettings(guildId).welcomeMessage;
+  }
+
+  setWelcomeMessage(guildId: string, config: Partial<WelcomeMessageConfig>, userId: string): GuildSettings {
+    return this.updateSettings(guildId, { welcomeMessage: config }, userId);
   }
 
   resetSettings(guildId: string, userId: string): GuildSettings {
@@ -113,6 +155,10 @@ class GuildSettingsManager {
     this.save(guildId, settings);
     logger.info(`Settings reset for guild ${guildId} by ${userId}`);
     return settings;
+  }
+
+  getAllGuildIds(): string[] {
+    return Object.keys(this.loadAll());
   }
 
   private loadAll(): Record<string, GuildSettings> {

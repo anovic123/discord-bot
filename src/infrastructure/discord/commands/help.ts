@@ -147,6 +147,7 @@ export async function handleHelpCommand(interaction: ChatInputCommandInteraction
           '`/ai-summary <period>` — AI выжимка чата',
           '`/ask <question>` — Задать вопрос AI',
           '`/roast <user>` — Рофл-описание пользователя',
+          `\`/toxic-mode\` — Токсичный режим (AI шутки) ${ADMIN_BADGE}`,
         ].join('\n'),
       },
       {
@@ -161,7 +162,10 @@ export async function handleHelpCommand(interaction: ChatInputCommandInteraction
       },
       {
         name: `⚙️ Настройки ${ADMIN_BADGE}`,
-        value: ['`/settings` — Управление настройками бота'].join('\n'),
+        value: [
+          '`/settings` — Управление настройками бота',
+          '`/welcome-message` — Настройка приветствия новых участников',
+        ].join('\n'),
       }
     )
     .setFooter({ text: `Запрос от ${interaction.user.tag}` })

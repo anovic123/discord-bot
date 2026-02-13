@@ -1,4 +1,13 @@
-import { Client, GatewayIntentBits, TextChannel, REST, Routes, EmbedBuilder } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  TextChannel,
+  REST,
+  Routes,
+  EmbedBuilder,
+  type ModalSubmitInteraction,
+  type GuildMember,
+} from 'discord.js';
 import cron from 'node-cron';
 import { Config } from '../../config';
 import { createLogger } from '../logger';
@@ -89,9 +98,22 @@ import {
   handleSettingsButton,
   handleSettingsSelectMenu,
 } from './commands/settings';
+import {
+  welcomeMessageCommand,
+  handleWelcomeMessageCommand,
+  handleWelcomeMessageButton,
+  handleWelcomeMessageModal,
+  buildWelcomeEmbed,
+} from './commands/welcome-message';
+import {
+  toxicModeCommand,
+  handleToxicModeCommand,
+  handleToxicModeButton,
+} from './commands/toxic-mode';
 import { guildSettings } from '../settings';
 import { statsTracker } from './utils/stats-tracker';
 import { setServerStatsProvider } from '../health';
+import { toxicModeManager } from './utils/toxic-mode-manager';
 
 interface UseCases {
   getRates: GetRatesUseCase;
@@ -161,8 +183,12 @@ export class DiscordBot {
       await this.registerCommands();
       this.startCronJob();
       setServerStatsProvider(() => this.getServerStats());
+      toxicModeManager.init(this.client);
+      await toxicModeManager.restoreTimers();
       await this.sendStartupMessage();
     });
+
+    this.client.on('guildMemberAdd', (member) => this.handleMemberJoin(member));
 
     this.client.on('interactionCreate', async (interaction) => {
       if (interaction.isButton() && interaction.customId.startsWith('settings_')) {
@@ -170,6 +196,33 @@ export class DiscordBot {
           await handleSettingsButton(interaction);
         } catch (error) {
           logger.error('Settings button error', error);
+        }
+        return;
+      }
+
+      if (interaction.isButton() && interaction.customId.startsWith('welcome_')) {
+        try {
+          await handleWelcomeMessageButton(interaction);
+        } catch (error) {
+          logger.error('Welcome message button error', error);
+        }
+        return;
+      }
+
+      if (interaction.isButton() && interaction.customId.startsWith('toxic_')) {
+        try {
+          await handleToxicModeButton(interaction);
+        } catch (error) {
+          logger.error('Toxic mode button error', error);
+        }
+        return;
+      }
+
+      if (interaction.isModalSubmit() && interaction.customId === 'welcome_modal') {
+        try {
+          await handleWelcomeMessageModal(interaction as ModalSubmitInteraction);
+        } catch (error) {
+          logger.error('Welcome message modal error', error);
         }
         return;
       }
@@ -448,6 +501,12 @@ export class DiscordBot {
           case 'settings':
             await handleSettingsCommand(interaction);
             break;
+          case 'welcome-message':
+            await handleWelcomeMessageCommand(interaction);
+            break;
+          case 'toxic-mode':
+            await handleToxicModeCommand(interaction);
+            break;
         }
       } catch (error) {
         statsTracker.trackError();
@@ -537,6 +596,8 @@ export class DiscordBot {
       askCommand.toJSON(),
       roastCommand.toJSON(),
       settingsCommand.toJSON(),
+      welcomeMessageCommand.toJSON(),
+      toxicModeCommand.toJSON(),
     ];
 
     try {
@@ -677,7 +738,7 @@ export class DiscordBot {
       }
 
       const guild = this.client.guilds.cache.get(this.config.guildId);
-      const totalCommands = 68;
+      const totalCommands = 70;
 
       const embed = new EmbedBuilder()
         .setColor(0x00ff00)
@@ -698,6 +759,42 @@ export class DiscordBot {
       logger.info('Startup message sent');
     } catch (error) {
       logger.error('Failed to send startup message', error);
+    }
+  }
+
+  private async handleMemberJoin(member: GuildMember): Promise<void> {
+    if (!this.config.welcomeChannelId) return;
+
+    const settings = guildSettings.getSettings(member.guild.id);
+    if (!settings.welcome.welcomeMessage || !settings.welcomeMessage.enabled) return;
+
+    try {
+      let channel;
+      try {
+        channel = await this.client.channels.fetch(this.config.welcomeChannelId);
+      } catch {
+        logger.warn(`Welcome message skipped: channel ${this.config.welcomeChannelId} not accessible`);
+        return;
+      }
+
+      if (!channel || !(channel instanceof TextChannel)) {
+        logger.warn('Welcome message skipped: channel is not a text channel');
+        return;
+      }
+
+      const embed = buildWelcomeEmbed(settings.welcomeMessage, {
+        userId: member.id,
+        username: member.displayName,
+        server: member.guild.name,
+        memberCount: member.guild.memberCount,
+        avatar: member.displayAvatarURL({ size: 256 }),
+        createdTimestamp: Math.floor(member.user.createdTimestamp / 1000),
+      });
+
+      await channel.send({ embeds: [embed] });
+      logger.info(`Welcome message sent for ${member.user.tag}`);
+    } catch (error) {
+      logger.error('Failed to send welcome message', error);
     }
   }
 

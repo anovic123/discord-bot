@@ -1,6 +1,6 @@
 # Discord Bot
 
-Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI-выжимкой, переводами, настройками через Discord UI и 70+ slash командами.
+Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI-выжимкой, переводами, toxic-mode, настройками через Discord UI и 70 slash командами.
 
 ## Установка
 
@@ -19,12 +19,12 @@ npm install
 | `DISCORD_TOKEN` | Токен Discord бота | Да |
 | `CHANNEL_ID` | ID канала для уведомлений | Да |
 | `GUILD_ID` | ID сервера | Да |
-| `WELCOME_CHANNEL_ID` | ID канала приветствий | Нет |
+| `WELCOME_CHANNEL_ID` | ID канала приветствий (startup-сообщение + приветствие новых участников) | Нет |
 | `CRON_TIME` | Расписание cron (по умолчанию: `0 9 * * *`) | Нет |
 | `TIMEZONE` | Часовой пояс (по умолчанию: `Europe/Kyiv`) | Нет |
 | `LOG_LEVEL` | Уровень логирования: `debug`, `info`, `warn`, `error` (по умолчанию: `info`) | Нет |
 | `OPENWEATHER_API_KEY` |  API ключ OpenWeather. Без него команды погоды не работают | Нет |
-| `GROQ_API_KEY` | API ключ Groq. Без него AI-команды (`/ai-summary`, `/ask`, `/roast`) не работают | Нет |
+| `GROQ_API_KEY` | API ключ Groq. Без него AI-команды (`/ai-summary`, `/ask`, `/roast`, `/toxic-mode`) не работают | Нет |
 
 ## Запуск
 
@@ -61,7 +61,7 @@ docker-compose up -d
 ## Команды бота
 
 ### Модерация
-`/ban`, `/tempban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`, `/settings`
+`/ban`, `/tempban`, `/unban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/purge`, `/clear`, `/lock`, `/unlock`, `/hide`, `/show`, `/slowmode`, `/slowoff`, `/role`, `/nick`, `/nickname`, `/setnick`, `/moveall`, `/voicekick`, `/voicemute`, `/voiceunmute`, `/deafen`, `/undeafen`, `/banlist`, `/announce`, `/dm`, `/settings`, `/welcome-message`
 
 ### Информация
 `/userinfo`, `/whois`, `/serverinfo`, `/channelinfo`, `/roleinfo`, `/roles`, `/members`, `/invites`, `/boosters`, `/emojis`, `/stats`, `/uptime`, `/servertime`, `/summary`
@@ -79,7 +79,7 @@ docker-compose up -d
 `/math`, `/base64`, `/reverse`, `/jumbo`, `/color`, `/password`, `/hash`, `/say`, `/embed`, `/stealemoji`
 
 ### AI (Groq)
-`/ai-summary`, `/ask`, `/roast`
+`/ai-summary`, `/ask`, `/roast`, `/toxic-mode`
 
 ### Прочее
 `/ping`, `/help`
