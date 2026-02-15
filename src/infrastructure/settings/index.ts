@@ -26,6 +26,24 @@ export interface ModerationSettings {
   auditLog: boolean;
 }
 
+export interface AISettings {
+  askEnabled: boolean;
+  roastEnabled: boolean;
+  aiSummaryEnabled: boolean;
+  maxRequestsPerDay: number;
+  cooldownSeconds: number;
+  temperature: number;
+}
+
+export interface LoggingSettings {
+  channelId: string;
+  messageDelete: boolean;
+  messageEdit: boolean;
+  memberJoinLeave: boolean;
+  nicknameChanges: boolean;
+  voiceActivity: boolean;
+}
+
 export interface ToxicModeSettings {
   enabled: boolean;
   channelId: string;
@@ -38,6 +56,8 @@ export interface GuildSettings {
   dailyReport: DailyReportSettings;
   welcome: WelcomeSettings;
   moderation: ModerationSettings;
+  ai: AISettings;
+  logging: LoggingSettings;
   welcomeMessage: WelcomeMessageConfig;
   toxicMode: ToxicModeSettings;
   updatedAt: string;
@@ -56,6 +76,22 @@ const DEFAULT_SETTINGS: Omit<GuildSettings, 'guildId' | 'updatedAt' | 'updatedBy
   },
   moderation: {
     auditLog: true,
+  },
+  ai: {
+    askEnabled: true,
+    roastEnabled: true,
+    aiSummaryEnabled: true,
+    maxRequestsPerDay: 50,
+    cooldownSeconds: 10,
+    temperature: 0.7,
+  },
+  logging: {
+    channelId: '',
+    messageDelete: true,
+    messageEdit: true,
+    memberJoinLeave: true,
+    nicknameChanges: true,
+    voiceActivity: true,
   },
   welcomeMessage: {
     enabled: true,
@@ -113,6 +149,8 @@ class GuildSettingsManager {
       dailyReport?: Partial<DailyReportSettings>;
       welcome?: Partial<WelcomeSettings>;
       moderation?: Partial<ModerationSettings>;
+      ai?: Partial<AISettings>;
+      logging?: Partial<LoggingSettings>;
       welcomeMessage?: Partial<WelcomeMessageConfig>;
       toxicMode?: Partial<ToxicModeSettings>;
     },
@@ -125,6 +163,8 @@ class GuildSettingsManager {
       dailyReport: { ...current.dailyReport, ...partial.dailyReport },
       welcome: { ...current.welcome, ...partial.welcome },
       moderation: { ...current.moderation, ...partial.moderation },
+      ai: { ...current.ai, ...partial.ai },
+      logging: { ...current.logging, ...partial.logging },
       welcomeMessage: { ...current.welcomeMessage, ...partial.welcomeMessage },
       toxicMode: { ...current.toxicMode, ...partial.toxicMode },
       updatedAt: new Date().toISOString(),

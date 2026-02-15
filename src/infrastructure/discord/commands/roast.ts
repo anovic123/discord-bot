@@ -6,6 +6,8 @@ import {
 } from 'discord.js';
 import { getGroqApiKey, callGroq } from '../utils/groq';
 import { logCommandError } from '../utils/error-handler';
+import { guildSettings } from '../../settings';
+import { aiRateLimiter } from '../utils/ai-rate-limiter';
 
 const MESSAGES_TO_FETCH = 50;
 const FETCH_LIMIT = 100;
@@ -32,6 +34,20 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
     return;
   }
 
+  const guildId = interaction.guildId || '';
+  const settings = guildSettings.getSettings(guildId);
+
+  if (!settings.ai.roastEnabled) {
+    await interaction.reply({ content: '❌ Команда /roast отключена в настройках.', ephemeral: true });
+    return;
+  }
+
+  const rateCheck = aiRateLimiter.check(guildId, interaction.user.id);
+  if (!rateCheck.allowed) {
+    await interaction.reply({ content: `⏳ ${rateCheck.reason}`, ephemeral: true });
+    return;
+  }
+
   const target = interaction.options.getUser('user', true);
   const channel = interaction.channel;
 
@@ -44,6 +60,7 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
   }
 
   await interaction.deferReply();
+  aiRateLimiter.consume(guildId, interaction.user.id);
 
   const fetched = await channel.messages.fetch({ limit: FETCH_LIMIT });
   const userMessages = fetched
@@ -74,7 +91,7 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
           content: `Вот последние сообщения пользователя "${target.displayName}":\n\n${messagesText}`,
         },
       ],
-      { temperature: 0.8 }
+      { temperature: Math.max(0.5, settings.ai.temperature) }
     );
 
     const embed = new EmbedBuilder()

@@ -8,6 +8,8 @@ import { fetchMessages } from '../utils/fetch-messages';
 import { getGroqApiKey, callGroq } from '../utils/groq';
 import { logCommandError } from '../utils/error-handler';
 import { createLogger } from '../../logger';
+import { guildSettings } from '../../settings';
+import { aiRateLimiter } from '../utils/ai-rate-limiter';
 
 const logger = createLogger('AiSummary');
 
@@ -64,6 +66,20 @@ export async function handleAiSummaryCommand(
     return;
   }
 
+  const guildId = interaction.guildId || '';
+  const aiSettings = guildSettings.getSettings(guildId);
+
+  if (!aiSettings.ai.aiSummaryEnabled) {
+    await interaction.reply({ content: '❌ Команда /ai-summary отключена в настройках.', ephemeral: true });
+    return;
+  }
+
+  const rateCheck = aiRateLimiter.check(guildId, interaction.user.id);
+  if (!rateCheck.allowed) {
+    await interaction.reply({ content: `⏳ ${rateCheck.reason}`, ephemeral: true });
+    return;
+  }
+
   const period = interaction.options.getString('period', true);
   const channel = interaction.channel;
 
@@ -76,6 +92,7 @@ export async function handleAiSummaryCommand(
   }
 
   await interaction.deferReply();
+  aiRateLimiter.consume(guildId, interaction.user.id);
 
   const cutoff = Date.now() - PERIOD_MS[period];
   const messages = await fetchMessages(channel, cutoff);
