@@ -7,7 +7,7 @@ vi.mock('../../logger', () => ({
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-import { callGroq, getGroqApiKey } from './groq';
+import { callGroq, getGroqApiKey, DEFAULT_GROQ_MODEL, GROQ_MODELS } from './groq';
 
 function groqResponse(content: string) {
   return {
@@ -33,7 +33,7 @@ describe('callGroq', () => {
     expect(result).toBe('Hi there');
   });
 
-  it('should use default temperature 0.3 and maxTokens 1024', async () => {
+  it('should use default temperature 0.3, maxTokens 1024 and default model', async () => {
     mockFetch.mockResolvedValue(groqResponse('ok'));
 
     await callGroq(apiKey, messages);
@@ -41,6 +41,7 @@ describe('callGroq', () => {
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(body.temperature).toBe(0.3);
     expect(body.max_tokens).toBe(1024);
+    expect(body.model).toBe(DEFAULT_GROQ_MODEL);
   });
 
   it('should pass custom options to body', async () => {
@@ -51,6 +52,15 @@ describe('callGroq', () => {
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(body.temperature).toBe(0.9);
     expect(body.max_tokens).toBe(512);
+  });
+
+  it('should use custom model when provided', async () => {
+    mockFetch.mockResolvedValue(groqResponse('ok'));
+
+    await callGroq(apiKey, messages, { model: 'llama-3.1-8b-instant' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.model).toBe('llama-3.1-8b-instant');
   });
 
   it('should throw on HTTP error with status code', async () => {
@@ -70,6 +80,13 @@ describe('callGroq', () => {
     });
 
     await expect(callGroq(apiKey, messages)).rejects.toThrow('Empty response from Groq API');
+  });
+});
+
+describe('GROQ_MODELS', () => {
+  it('should export a non-empty models list with default as first', () => {
+    expect(GROQ_MODELS.length).toBeGreaterThan(0);
+    expect(DEFAULT_GROQ_MODEL).toBe(GROQ_MODELS[0]);
   });
 });
 

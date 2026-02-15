@@ -97,7 +97,9 @@ import {
   handleSettingsCommand,
   handleSettingsButton,
   handleSettingsSelectMenu,
-  handleSettingsChannelSelect,
+  handleSettingsUserSelect,
+  handleSettingsAIConfigModal,
+  handleSettingsAPIKeyModal,
 } from './commands/settings';
 import {
   welcomeMessageCommand,
@@ -195,9 +197,9 @@ export class DiscordBot {
 
     this.client.on('guildMemberRemove', (member) => {
       const settings = guildSettings.getSettings(member.guild.id);
-      if (!settings.logging.channelId || !settings.logging.memberJoinLeave) return;
+      if (settings.logging.userIds.length === 0 || !settings.logging.memberJoinLeave) return;
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(0xff4444)
           .setTitle('👋 Участник покинул сервер')
@@ -210,9 +212,9 @@ export class DiscordBot {
     this.client.on('messageDelete', (message) => {
       if (!message.guildId || message.author?.bot) return;
       const settings = guildSettings.getSettings(message.guildId);
-      if (!settings.logging.channelId || !settings.logging.messageDelete) return;
+      if (settings.logging.userIds.length === 0 || !settings.logging.messageDelete) return;
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(0xff4444)
           .setTitle('🗑️ Сообщение удалено')
@@ -232,9 +234,9 @@ export class DiscordBot {
       if (!newMessage.guildId || newMessage.author?.bot) return;
       if (oldMessage.content === newMessage.content) return;
       const settings = guildSettings.getSettings(newMessage.guildId);
-      if (!settings.logging.channelId || !settings.logging.messageEdit) return;
+      if (settings.logging.userIds.length === 0 || !settings.logging.messageEdit) return;
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(0xffaa00)
           .setTitle('✏️ Сообщение отредактировано')
@@ -251,9 +253,9 @@ export class DiscordBot {
     this.client.on('guildMemberUpdate', (oldMember, newMember) => {
       if (oldMember.nickname === newMember.nickname) return;
       const settings = guildSettings.getSettings(newMember.guild.id);
-      if (!settings.logging.channelId || !settings.logging.nicknameChanges) return;
+      if (settings.logging.userIds.length === 0 || !settings.logging.nicknameChanges) return;
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(0x5865f2)
           .setTitle('📛 Смена никнейма')
@@ -269,7 +271,7 @@ export class DiscordBot {
     this.client.on('voiceStateUpdate', (oldState, newState) => {
       const guildId = newState.guild.id;
       const settings = guildSettings.getSettings(guildId);
-      if (!settings.logging.channelId || !settings.logging.voiceActivity) return;
+      if (settings.logging.userIds.length === 0 || !settings.logging.voiceActivity) return;
 
       const member = newState.member;
       if (!member || member.user.bot) return;
@@ -299,7 +301,7 @@ export class DiscordBot {
       }
 
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(color)
           .setTitle(title)
@@ -345,7 +347,30 @@ export class DiscordBot {
         return;
       }
 
-      if (interaction.isStringSelectMenu() && interaction.customId === 'settings_category') {
+      if (interaction.isModalSubmit() && interaction.customId === 'settings_modal_aiconfig') {
+        try {
+          await handleSettingsAIConfigModal(interaction as ModalSubmitInteraction);
+        } catch (error) {
+          logger.error('Settings AI config modal error', error);
+        }
+        return;
+      }
+
+      if (interaction.isModalSubmit() && interaction.customId === 'settings_modal_apikey') {
+        try {
+          await handleSettingsAPIKeyModal(interaction as ModalSubmitInteraction);
+        } catch (error) {
+          logger.error('Settings API key modal error', error);
+        }
+        return;
+      }
+
+      if (
+        interaction.isStringSelectMenu() &&
+        (interaction.customId === 'settings_category' ||
+          interaction.customId === 'settings_currencies' ||
+          interaction.customId === 'settings_ai_model')
+      ) {
         try {
           await handleSettingsSelectMenu(interaction);
         } catch (error) {
@@ -355,13 +380,13 @@ export class DiscordBot {
       }
 
       if (
-        interaction.isChannelSelectMenu() &&
-        interaction.customId.startsWith('settings_channel_')
+        interaction.isUserSelectMenu() &&
+        interaction.customId === 'settings_log_users'
       ) {
         try {
-          await handleSettingsChannelSelect(interaction);
+          await handleSettingsUserSelect(interaction);
         } catch (error) {
-          logger.error('Settings channel select error', error);
+          logger.error('Settings user select error', error);
         }
         return;
       }
@@ -759,7 +784,9 @@ export class DiscordBot {
       const settings = guildSettings.getSettings(this.config.guildId);
 
       const [currencyMessage, cryptoMessage] = await Promise.all([
-        settings.dailyReport.currencyRates ? this.useCases.getRates.executeWithGreeting() : null,
+        settings.dailyReport.currencyRates
+          ? this.useCases.getRates.executeWithGreeting(settings.dailyReport.currencies)
+          : null,
         settings.dailyReport.cryptoRates ? this.useCases.getCrypto.execute() : null,
       ]);
 
@@ -891,9 +918,9 @@ export class DiscordBot {
   private async handleMemberJoin(member: GuildMember): Promise<void> {
     const settings = guildSettings.getSettings(member.guild.id);
 
-    if (settings.logging.channelId && settings.logging.memberJoinLeave) {
+    if (settings.logging.userIds.length > 0 && settings.logging.memberJoinLeave) {
       this.sendLogEmbed(
-        settings.logging.channelId,
+        settings.logging.userIds,
         new EmbedBuilder()
           .setColor(0x57f287)
           .setTitle('📥 Новый участник')
@@ -938,17 +965,17 @@ export class DiscordBot {
     }
   }
 
-  private sendLogEmbed(channelId: string, embed: EmbedBuilder): void {
-    this.client.channels
-      .fetch(channelId)
-      .then((channel) => {
-        if (channel instanceof TextChannel) {
-          channel
+  private sendLogEmbed(userIds: string[], embed: EmbedBuilder): void {
+    for (const userId of userIds) {
+      this.client.users
+        .fetch(userId)
+        .then((user) => {
+          user
             .send({ embeds: [embed] })
-            .catch((err) => logger.error('Failed to send log embed', err));
-        }
-      })
-      .catch((err) => logger.error('Failed to fetch log channel', err));
+            .catch((err) => logger.warn(`Failed to DM log to ${userId}`, err));
+        })
+        .catch((err) => logger.warn(`Failed to fetch user ${userId} for log`, err));
+    }
   }
 
   private getServerStats(): object {

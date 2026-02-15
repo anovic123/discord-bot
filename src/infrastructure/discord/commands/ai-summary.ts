@@ -5,7 +5,7 @@ import {
   TextChannel,
 } from 'discord.js';
 import { fetchMessages } from '../utils/fetch-messages';
-import { getGroqApiKey, callGroq } from '../utils/groq';
+import { getAIApiKey, callAI, getProviderLabel } from '../utils/ai-provider';
 import { logCommandError } from '../utils/error-handler';
 import { createLogger } from '../../logger';
 import { guildSettings } from '../../settings';
@@ -53,21 +53,22 @@ export const aiSummaryCommand = new SlashCommandBuilder()
 export async function handleAiSummaryCommand(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  const apiKey = getGroqApiKey();
+  const guildId = interaction.guildId || '';
+  const aiSettings = guildSettings.getSettings(guildId);
+  const provider = aiSettings.ai.provider;
+  const apiKey = getAIApiKey(provider, guildId);
 
   if (!apiKey) {
+    const label = getProviderLabel(provider);
     const embed = new EmbedBuilder()
       .setColor(0xff9900)
       .setTitle('⚠️ AI-выжимка недоступна')
-      .setDescription('API ключ Groq не настроен.\nДобавьте `GROQ_API_KEY` в переменные окружения.')
+      .setDescription(`API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`)
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
     return;
   }
-
-  const guildId = interaction.guildId || '';
-  const aiSettings = guildSettings.getSettings(guildId);
 
   if (!aiSettings.ai.aiSummaryEnabled) {
     await interaction.reply({
@@ -118,19 +119,24 @@ export async function handleAiSummaryCommand(
   }
 
   try {
-    logger.debug('Groq API request', { messagesCount: messages.length, period });
+    logger.debug('AI API request', { provider, messagesCount: messages.length, period });
 
-    const summary = await callGroq(apiKey, [
-      {
-        role: 'system',
-        content:
-          'Ты — помощник, который делает краткую выжимку чата. Отвечай на языке чата. Выжимка должна быть до 1500 символов. Выдели основные темы, ключевые решения и важные моменты.',
-      },
-      {
-        role: 'user',
-        content: `Сделай краткую выжимку этого чата:\n\n${chatText}`,
-      },
-    ]);
+    const summary = await callAI(
+      provider,
+      apiKey,
+      [
+        {
+          role: 'system',
+          content:
+            'Ты — помощник, который делает краткую выжимку чата. Отвечай на языке чата. Выжимка должна быть до 1500 символов. Выдели основные темы, ключевые решения и важные моменты.',
+        },
+        {
+          role: 'user',
+          content: `Сделай краткую выжимку этого чата:\n\n${chatText}`,
+        },
+      ],
+      { model: aiSettings.ai.model || undefined }
+    );
 
     const embed = new EmbedBuilder()
       .setColor(0x5865f2)

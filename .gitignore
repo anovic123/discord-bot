@@ -6,3 +6,4 @@ dist/
 coverage/
 audit-log.json
 guild-settings.json
+data/encryption.key

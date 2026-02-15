@@ -1,13 +1,30 @@
 import axios from 'axios';
-import { CurrencyProvider, CurrencyRates } from '../../domain/currency/types';
+import { CurrencyProvider, CurrencyRate, CurrencyRates } from '../../domain/currency/types';
 import { rateLimiter } from '../rate-limiter';
 
-const CURRENCY_CODES = {
+const CURRENCY_CODES: Record<string, number> = {
   UAH: 980,
   USD: 840,
   EUR: 978,
   PLN: 985,
-} as const;
+  GBP: 826,
+  CHF: 756,
+  CZK: 203,
+  JPY: 392,
+  CNY: 156,
+  SEK: 752,
+  NOK: 578,
+  CAD: 124,
+  AUD: 36,
+  TRY: 949,
+  ILS: 376,
+  KZT: 398,
+  GEL: 981,
+};
+
+export const AVAILABLE_CURRENCIES = Object.keys(CURRENCY_CODES).filter((c) => c !== 'UAH');
+
+const DEFAULT_CURRENCIES = ['USD', 'EUR', 'PLN'];
 
 interface MonobankRate {
   currencyCodeA: number;
@@ -20,33 +37,30 @@ interface MonobankRate {
 
 export class MonobankClient implements CurrencyProvider {
   private readonly apiUrl = 'https://api.monobank.ua/bank/currency';
-  private cache: CurrencyRates | null = null;
+  private rawCache: MonobankRate[] | null = null;
   private cacheTime = 0;
   private readonly cacheTtl = 60000;
 
-  async getRates(): Promise<CurrencyRates> {
+  async getRates(currencies?: string[]): Promise<CurrencyRates> {
     const now = Date.now();
-    if (this.cache && now - this.cacheTime < this.cacheTtl) {
-      return this.cache;
+    if (!this.rawCache || now - this.cacheTime >= this.cacheTtl) {
+      await rateLimiter.acquireOrWait('monobank');
+      const response = await axios.get<MonobankRate[]>(this.apiUrl);
+      this.rawCache = response.data;
+      this.cacheTime = now;
     }
 
-    await rateLimiter.acquireOrWait('monobank');
+    const requested = currencies && currencies.length > 0 ? currencies : DEFAULT_CURRENCIES;
+    const uahCode = CURRENCY_CODES.UAH;
 
-    const response = await axios.get<MonobankRate[]>(this.apiUrl);
-    const rates = response.data;
+    const rates: CurrencyRate[] = requested
+      .filter((code) => code in CURRENCY_CODES && code !== 'UAH')
+      .map((code) => this.mapRate(this.rawCache!, CURRENCY_CODES[code], uahCode, `${code}/UAH`));
 
-    this.cache = {
-      usdUah: this.mapRate(rates, CURRENCY_CODES.USD, CURRENCY_CODES.UAH, 'USD/UAH'),
-      eurUah: this.mapRate(rates, CURRENCY_CODES.EUR, CURRENCY_CODES.UAH, 'EUR/UAH'),
-      plnUah: this.mapRate(rates, CURRENCY_CODES.PLN, CURRENCY_CODES.UAH, 'PLN/UAH'),
-      updatedAt: new Date(),
-    };
-    this.cacheTime = now;
-
-    return this.cache;
+    return { rates, updatedAt: new Date() };
   }
 
-  private mapRate(rates: MonobankRate[], codeA: number, codeB: number, pair: string) {
+  private mapRate(rates: MonobankRate[], codeA: number, codeB: number, pair: string): CurrencyRate {
     const rate = rates.find((r) => r.currencyCodeA === codeA && r.currencyCodeB === codeB);
 
     return {

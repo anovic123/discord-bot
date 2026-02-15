@@ -1,7 +1,7 @@
 {
   "name": "discord-bot",
   "version": "1.0.0",
-  "description": "Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI (Groq), логированием, toxic-mode и 70 slash командами",
+  "description": "Многофункциональный Discord бот с модерацией, утилитами, курсами валют/крипты, погодой, AI (Groq/OpenAI) с настраиваемыми моделями и ключами, логированием в ЛС, toxic-mode и 70 slash командами",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx src/index.ts",

@@ -6,9 +6,11 @@ describe('ConverterService', () => {
   let service: ConverterService;
 
   const mockRates: CurrencyRates = {
-    usdUah: { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-    eurUah: { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
-    plnUah: { pair: 'PLN/UAH', buy: null, sell: null, cross: 10.5 },
+    rates: [
+      { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
+      { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
+      { pair: 'PLN/UAH', buy: null, sell: null, cross: 10.5 },
+    ],
     updatedAt: new Date(),
   };
 

@@ -3,17 +3,24 @@ import {
   ChatInputCommandInteraction,
   ButtonInteraction,
   StringSelectMenuInteraction,
-  ChannelSelectMenuInteraction,
+  UserSelectMenuInteraction,
+  ModalSubmitInteraction,
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  ChannelSelectMenuBuilder,
-  ChannelType,
+  UserSelectMenuBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from 'discord.js';
-import { guildSettings, type GuildSettings } from '../../settings';
+import { guildSettings, type GuildSettings, type AIProviderType } from '../../settings';
+import { encrypt } from '../../encryption';
 import { requireAdmin } from '../utils/permissions';
+import { AVAILABLE_CURRENCIES } from '../../monobank/client';
+import { GROQ_MODELS, DEFAULT_GROQ_MODEL } from '../utils/groq';
+import { OPENAI_MODELS, DEFAULT_OPENAI_MODEL } from '../utils/openai';
 
 export const settingsCommand = new SlashCommandBuilder()
   .setName('settings')
@@ -47,12 +54,8 @@ const SETTING_LABELS: Record<string, Record<string, string>> = {
     askEnabled: '💬 Команда /ask',
     roastEnabled: '🔥 Команда /roast',
     aiSummaryEnabled: '📝 Команда /ai-summary',
-    maxRequestsPerDay: '📊 Лимит запросов/день',
-    cooldownSeconds: '⏱️ Кулдаун (сек)',
-    temperature: '🌡️ Температура модели',
   },
   logging: {
-    channelId: '📝 Канал для логов',
     messageDelete: '🗑️ Удаление сообщений',
     messageEdit: '✏️ Редактирование сообщений',
     memberJoinLeave: '👥 Вход/выход участников',
@@ -73,10 +76,6 @@ function isNumericSetting(category: string, key: string): boolean {
   return `${category}.${key}` in NUMERIC_SETTINGS;
 }
 
-function isChannelSetting(category: string, key: string): boolean {
-  return category === 'logging' && key === 'channelId';
-}
-
 function statusIcon(enabled: boolean): string {
   return enabled ? '🟢' : '🔴';
 }
@@ -86,13 +85,22 @@ function getCategoryData(settings: GuildSettings, category: string): Record<stri
 }
 
 function formatSettingValue(category: string, key: string, value: unknown): string {
-  if (isChannelSetting(category, key)) {
-    return value ? `<#${value}>` : '❌ Не задан';
+  if (category === 'logging' && key === 'userIds') {
+    const ids = value as string[];
+    return ids.length > 0 ? ids.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
   }
   if (isNumericSetting(category, key)) {
     return `**${value}**`;
   }
   return statusIcon(value as boolean);
+}
+
+function getModelsForProvider(provider: AIProviderType): readonly string[] {
+  return provider === 'groq' ? GROQ_MODELS : OPENAI_MODELS;
+}
+
+function getDefaultModel(provider: AIProviderType): string {
+  return provider === 'groq' ? DEFAULT_GROQ_MODEL : DEFAULT_OPENAI_MODEL;
 }
 
 function buildOverviewEmbed(settings: GuildSettings, search?: string): EmbedBuilder {
@@ -107,6 +115,24 @@ function buildOverviewEmbed(settings: GuildSettings, search?: string): EmbedBuil
       if (query && !label.toLowerCase().includes(query)) continue;
       const value = categoryData[key];
       matchedLines.push(`${formatSettingValue(category, key, value)} ${label}`);
+    }
+
+    if (category === 'dailyReport' && (!query || 'валюты'.includes(query))) {
+      matchedLines.push(`💱 Валюты: **${settings.dailyReport.currencies.join(', ')}**`);
+    }
+
+    if (category === 'ai' && (!query || 'провайдер'.includes(query))) {
+      const providerLabel = settings.ai.provider === 'openai' ? 'OpenAI' : 'Groq';
+      matchedLines.push(`🧠 AI Провайдер: **${providerLabel}**`);
+      const model = settings.ai.model || getDefaultModel(settings.ai.provider);
+      matchedLines.push(`🤖 Модель: **${model}**`);
+    }
+
+    if (category === 'logging' && (!query || 'получатели'.includes(query))) {
+      const userIds = settings.logging.userIds;
+      const val =
+        userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
+      matchedLines.push(`👤 Получатели логов: ${val}`);
     }
 
     if (matchedLines.length > 0) {
@@ -160,6 +186,31 @@ function buildCategoryEmbed(settings: GuildSettings, category: string): EmbedBui
     lines.push(`${formatSettingValue(category, key, value)} ${label}`);
   }
 
+  if (category === 'dailyReport') {
+    lines.push(`💱 Валюты: **${settings.dailyReport.currencies.join(', ')}**`);
+  }
+
+  if (category === 'ai') {
+    const providerLabel = settings.ai.provider === 'openai' ? 'OpenAI' : 'Groq';
+    lines.push(`🧠 AI Провайдер: **${providerLabel}**`);
+    const model = settings.ai.model || getDefaultModel(settings.ai.provider);
+    lines.push(`🤖 Модель: **${model}**`);
+    lines.push(`📊 Лимит: **${settings.ai.maxRequestsPerDay}**/день`);
+    lines.push(`⏱️ Кулдаун: **${settings.ai.cooldownSeconds}** сек`);
+    lines.push(`🌡️ Температура: **${settings.ai.temperature}**`);
+    const hasGroqKey = !!settings.ai.groqApiKey;
+    const hasOpenaiKey = !!settings.ai.openaiApiKey;
+    lines.push(`🔑 Groq API Key: ${hasGroqKey ? '✅ Задан' : '📌 ENV'}`);
+    lines.push(`🔑 OpenAI API Key: ${hasOpenaiKey ? '✅ Задан' : '📌 ENV'}`);
+  }
+
+  if (category === 'logging') {
+    const userIds = settings.logging.userIds;
+    const val =
+      userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
+    lines.push(`👤 Получатели логов: ${val}`);
+  }
+
   return new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle(`${CATEGORY_LABELS[category]} — Настройки`)
@@ -170,47 +221,15 @@ function buildCategoryEmbed(settings: GuildSettings, category: string): EmbedBui
 function buildCategoryComponents(
   settings: GuildSettings,
   category: string
-): ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder>[] {
+): ActionRowBuilder<ButtonBuilder | UserSelectMenuBuilder | StringSelectMenuBuilder>[] {
   const categoryData = getCategoryData(settings, category);
   const labels = SETTING_LABELS[category];
-  const rows: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder>[] = [];
+  const rows: ActionRowBuilder<ButtonBuilder | UserSelectMenuBuilder | StringSelectMenuBuilder>[] =
+    [];
 
   const toggleButtons: ButtonBuilder[] = [];
-  const numericRows: ActionRowBuilder<ButtonBuilder>[] = [];
 
   for (const [key, label] of Object.entries(labels)) {
-    if (isChannelSetting(category, key)) {
-      const channelRow = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
-        new ChannelSelectMenuBuilder()
-          .setCustomId(`settings_channel_${category}_${key}`)
-          .setPlaceholder('📝 Выбрать канал для логов')
-          .setChannelTypes(ChannelType.GuildText)
-      );
-      rows.push(channelRow);
-      continue;
-    }
-
-    if (isNumericSetting(category, key)) {
-      const value = categoryData[key] as number;
-      const numRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`settings_dec_${category}_${key}`)
-          .setLabel('➖')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId(`settings_numinfo_${category}_${key}`)
-          .setLabel(`${label}: ${value}`)
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId(`settings_inc_${category}_${key}`)
-          .setLabel('➕')
-          .setStyle(ButtonStyle.Secondary)
-      );
-      numericRows.push(numRow);
-      continue;
-    }
-
     const enabled = categoryData[key] as boolean;
     toggleButtons.push(
       new ButtonBuilder()
@@ -224,7 +243,75 @@ function buildCategoryComponents(
     rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(toggleButtons.slice(i, i + 5)));
   }
 
-  rows.push(...numericRows);
+  if (category === 'dailyReport') {
+    const currencySelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId('settings_currencies')
+        .setPlaceholder('💱 Выбрать валюты')
+        .setMinValues(1)
+        .setMaxValues(AVAILABLE_CURRENCIES.length)
+        .addOptions(
+          AVAILABLE_CURRENCIES.map((code) => ({
+            label: `${code}/UAH`,
+            value: code,
+            default: settings.dailyReport.currencies.includes(code),
+          }))
+        )
+    );
+    rows.push(currencySelect);
+  }
+
+  if (category === 'ai') {
+    const currentProvider = settings.ai.provider;
+
+    const providerRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('settings_provider_groq')
+        .setLabel('Groq')
+        .setStyle(currentProvider === 'groq' ? ButtonStyle.Success : ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('settings_provider_openai')
+        .setLabel('OpenAI')
+        .setStyle(currentProvider === 'openai' ? ButtonStyle.Success : ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('settings_ai_apikey')
+        .setLabel('🔑 API Key')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId('settings_ai_params')
+        .setLabel('⚙️ Параметры')
+        .setStyle(ButtonStyle.Secondary)
+    );
+    rows.push(providerRow);
+
+    const models = getModelsForProvider(currentProvider);
+    const currentModel = settings.ai.model || getDefaultModel(currentProvider);
+
+    const modelSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId('settings_ai_model')
+        .setPlaceholder('🤖 Выбрать модель')
+        .addOptions(
+          models.map((m) => ({
+            label: m,
+            value: m,
+            default: m === currentModel,
+          }))
+        )
+    );
+    rows.push(modelSelect);
+  }
+
+  if (category === 'logging') {
+    const userSelect = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
+      new UserSelectMenuBuilder()
+        .setCustomId('settings_log_users')
+        .setPlaceholder('👤 Выбрать получателей логов')
+        .setMinValues(0)
+        .setMaxValues(10)
+    );
+    rows.push(userSelect);
+  }
 
   const maxContentRows = 4;
   const contentRows = rows.slice(0, maxContentRows);
@@ -287,6 +374,90 @@ export async function handleSettingsButton(interaction: ButtonInteraction): Prom
     return;
   }
 
+  const providerMatch = customId.match(/^settings_provider_(groq|openai)$/);
+  if (providerMatch) {
+    const newProvider = providerMatch[1] as AIProviderType;
+    const settings = guildSettings.updateSettings(
+      guildId,
+      { ai: { provider: newProvider, model: '' } },
+      interaction.user.id
+    );
+
+    await interaction.update({
+      embeds: [buildCategoryEmbed(settings, 'ai')],
+      components: buildCategoryComponents(settings, 'ai'),
+    });
+    return;
+  }
+
+  if (customId === 'settings_ai_apikey') {
+    const modal = new ModalBuilder()
+      .setCustomId('settings_modal_apikey')
+      .setTitle('🔑 API ключи');
+
+    const groqInput = new TextInputBuilder()
+      .setCustomId('groq_key')
+      .setLabel('Groq API Key (пустое = переменная окружения)')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false)
+      .setMaxLength(200)
+      .setPlaceholder('gsk_...');
+
+    const openaiInput = new TextInputBuilder()
+      .setCustomId('openai_key')
+      .setLabel('OpenAI API Key (пустое = переменная окружения)')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false)
+      .setMaxLength(200)
+      .setPlaceholder('sk-...');
+
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(groqInput),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(openaiInput)
+    );
+
+    await interaction.showModal(modal);
+    return;
+  }
+
+  if (customId === 'settings_ai_params') {
+    const current = guildSettings.getSettings(guildId);
+
+    const modal = new ModalBuilder()
+      .setCustomId('settings_modal_aiconfig')
+      .setTitle('⚙️ Параметры AI');
+
+    const maxReqInput = new TextInputBuilder()
+      .setCustomId('max_requests')
+      .setLabel('Лимит запросов в день (10-200)')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true)
+      .setValue(String(current.ai.maxRequestsPerDay));
+
+    const cooldownInput = new TextInputBuilder()
+      .setCustomId('cooldown')
+      .setLabel('Кулдаун в секундах (0-60)')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true)
+      .setValue(String(current.ai.cooldownSeconds));
+
+    const tempInput = new TextInputBuilder()
+      .setCustomId('temperature')
+      .setLabel('Температура (0.1-1.5)')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true)
+      .setValue(String(current.ai.temperature));
+
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(maxReqInput),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(cooldownInput),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(tempInput)
+    );
+
+    await interaction.showModal(modal);
+    return;
+  }
+
   const toggleMatch = customId.match(/^settings_toggle_(\w+)_(\w+)$/);
   if (toggleMatch) {
     const [, category, key] = toggleMatch;
@@ -344,6 +515,36 @@ export async function handleSettingsSelectMenu(
   const guildId = interaction.guildId;
   if (!guildId) return;
 
+  if (interaction.customId === 'settings_currencies') {
+    const currencies = interaction.values;
+    const settings = guildSettings.updateSettings(
+      guildId,
+      { dailyReport: { currencies } },
+      interaction.user.id
+    );
+
+    await interaction.update({
+      embeds: [buildCategoryEmbed(settings, 'dailyReport')],
+      components: buildCategoryComponents(settings, 'dailyReport'),
+    });
+    return;
+  }
+
+  if (interaction.customId === 'settings_ai_model') {
+    const model = interaction.values[0];
+    const settings = guildSettings.updateSettings(
+      guildId,
+      { ai: { model } },
+      interaction.user.id
+    );
+
+    await interaction.update({
+      embeds: [buildCategoryEmbed(settings, 'ai')],
+      components: buildCategoryComponents(settings, 'ai'),
+    });
+    return;
+  }
+
   const category = interaction.values[0];
   const settings = guildSettings.getSettings(guildId);
 
@@ -353,26 +554,97 @@ export async function handleSettingsSelectMenu(
   });
 }
 
-export async function handleSettingsChannelSelect(
-  interaction: ChannelSelectMenuInteraction
+export async function handleSettingsUserSelect(
+  interaction: UserSelectMenuInteraction
 ): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
-  const match = interaction.customId.match(/^settings_channel_(\w+)_(\w+)$/);
-  if (!match) return;
+  if (interaction.customId === 'settings_log_users') {
+    const userIds = interaction.values;
+    const settings = guildSettings.updateSettings(
+      guildId,
+      { logging: { userIds } },
+      interaction.user.id
+    );
 
-  const [, category, key] = match;
-  const channelId = interaction.values[0] || '';
+    await interaction.update({
+      embeds: [buildCategoryEmbed(settings, 'logging')],
+      components: buildCategoryComponents(settings, 'logging'),
+    });
+  }
+}
+
+export async function handleSettingsAIConfigModal(
+  interaction: ModalSubmitInteraction
+): Promise<void> {
+  const guildId = interaction.guildId;
+  if (!guildId) return;
+
+  const maxRequests = parseInt(interaction.fields.getTextInputValue('max_requests'), 10);
+  const cooldown = parseInt(interaction.fields.getTextInputValue('cooldown'), 10);
+  const temperature = parseFloat(interaction.fields.getTextInputValue('temperature'));
+
+  if (isNaN(maxRequests) || isNaN(cooldown) || isNaN(temperature)) {
+    await interaction.reply({ content: '❌ Некорректные значения.', ephemeral: true });
+    return;
+  }
+
+  const clampedMax = Math.max(10, Math.min(200, maxRequests));
+  const clampedCooldown = Math.max(0, Math.min(60, cooldown));
+  const clampedTemp = Math.max(0.1, Math.min(1.5, Math.round(temperature * 10) / 10));
 
   const settings = guildSettings.updateSettings(
     guildId,
-    { [category]: { [key]: channelId } },
+    {
+      ai: {
+        maxRequestsPerDay: clampedMax,
+        cooldownSeconds: clampedCooldown,
+        temperature: clampedTemp,
+      },
+    },
     interaction.user.id
   );
 
-  await interaction.update({
-    embeds: [buildCategoryEmbed(settings, category)],
-    components: buildCategoryComponents(settings, category),
+  await interaction.reply({
+    embeds: [buildCategoryEmbed(settings, 'ai')],
+    components: buildCategoryComponents(settings, 'ai'),
+    ephemeral: true,
+  });
+}
+
+export async function handleSettingsAPIKeyModal(
+  interaction: ModalSubmitInteraction
+): Promise<void> {
+  const guildId = interaction.guildId;
+  if (!guildId) return;
+
+  const groqKey = interaction.fields.getTextInputValue('groq_key').trim();
+  const openaiKey = interaction.fields.getTextInputValue('openai_key').trim();
+
+  const update: { groqApiKey?: string; openaiApiKey?: string } = {};
+
+  if (groqKey) {
+    update.groqApiKey = encrypt(groqKey);
+  } else {
+    update.groqApiKey = '';
+  }
+
+  if (openaiKey) {
+    update.openaiApiKey = encrypt(openaiKey);
+  } else {
+    update.openaiApiKey = '';
+  }
+
+  const settings = guildSettings.updateSettings(guildId, { ai: update }, interaction.user.id);
+
+  const statusLines = [
+    `🔑 Groq API Key: ${settings.ai.groqApiKey ? '✅ Задан' : '📌 ENV'}`,
+    `🔑 OpenAI API Key: ${settings.ai.openaiApiKey ? '✅ Задан' : '📌 ENV'}`,
+  ];
+
+  await interaction.reply({
+    content: `API ключи обновлены:\n${statusLines.join('\n')}`,
+    ephemeral: true,
   });
 }

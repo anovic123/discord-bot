@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { getGroqApiKey, callGroq } from '../utils/groq';
+import { getAIApiKey, callAI, getProviderLabel } from '../utils/ai-provider';
 import { logCommandError } from '../utils/error-handler';
 import { guildSettings } from '../../settings';
 import { aiRateLimiter } from '../utils/ai-rate-limiter';
@@ -12,21 +12,22 @@ export const askCommand = new SlashCommandBuilder()
   );
 
 export async function handleAskCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-  const apiKey = getGroqApiKey();
+  const guildId = interaction.guildId || '';
+  const settings = guildSettings.getSettings(guildId);
+  const provider = settings.ai.provider;
+  const apiKey = getAIApiKey(provider, guildId);
 
   if (!apiKey) {
+    const label = getProviderLabel(provider);
     const embed = new EmbedBuilder()
       .setColor(0xff9900)
       .setTitle('⚠️ AI недоступен')
-      .setDescription('API ключ Groq не настроен.\nДобавьте `GROQ_API_KEY` в переменные окружения.')
+      .setDescription(`API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`)
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
     return;
   }
-
-  const guildId = interaction.guildId || '';
-  const settings = guildSettings.getSettings(guildId);
 
   if (!settings.ai.askEnabled) {
     await interaction.reply({
@@ -48,7 +49,8 @@ export async function handleAskCommand(interaction: ChatInputCommandInteraction)
   aiRateLimiter.consume(guildId, interaction.user.id);
 
   try {
-    const answer = await callGroq(
+    const answer = await callAI(
+      provider,
       apiKey,
       [
         {
@@ -61,7 +63,7 @@ export async function handleAskCommand(interaction: ChatInputCommandInteraction)
           content: question,
         },
       ],
-      { temperature: settings.ai.temperature }
+      { temperature: settings.ai.temperature, model: settings.ai.model || undefined }
     );
 
     const embed = new EmbedBuilder()

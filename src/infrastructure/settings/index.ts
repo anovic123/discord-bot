@@ -8,6 +8,7 @@ export interface DailyReportSettings {
   currencyRates: boolean;
   cryptoRates: boolean;
   serverStats: boolean;
+  currencies: string[];
 }
 
 export interface WelcomeMessageConfig {
@@ -26,6 +27,8 @@ export interface ModerationSettings {
   auditLog: boolean;
 }
 
+export type AIProviderType = 'groq' | 'openai';
+
 export interface AISettings {
   askEnabled: boolean;
   roastEnabled: boolean;
@@ -33,10 +36,14 @@ export interface AISettings {
   maxRequestsPerDay: number;
   cooldownSeconds: number;
   temperature: number;
+  provider: AIProviderType;
+  model: string;
+  groqApiKey: string;
+  openaiApiKey: string;
 }
 
 export interface LoggingSettings {
-  channelId: string;
+  userIds: string[];
   messageDelete: boolean;
   messageEdit: boolean;
   memberJoinLeave: boolean;
@@ -66,13 +73,14 @@ export interface GuildSettings {
 
 const DEFAULT_SETTINGS: Omit<GuildSettings, 'guildId' | 'updatedAt' | 'updatedBy'> = {
   dailyReport: {
-    currencyRates: true,
-    cryptoRates: true,
-    serverStats: true,
+    currencyRates: false,
+    cryptoRates: false,
+    serverStats: false,
+    currencies: ['USD', 'EUR', 'PLN'],
   },
   welcome: {
-    startupMessage: true,
-    welcomeMessage: true,
+    startupMessage: false,
+    welcomeMessage: false,
   },
   moderation: {
     auditLog: true,
@@ -84,9 +92,13 @@ const DEFAULT_SETTINGS: Omit<GuildSettings, 'guildId' | 'updatedAt' | 'updatedBy
     maxRequestsPerDay: 50,
     cooldownSeconds: 10,
     temperature: 0.7,
+    provider: 'groq',
+    model: '',
+    groqApiKey: '',
+    openaiApiKey: '',
   },
   logging: {
-    channelId: '',
+    userIds: [],
     messageDelete: true,
     messageEdit: true,
     memberJoinLeave: true,
@@ -133,7 +145,40 @@ export class GuildSettingsManager {
 
   getSettings(guildId: string): GuildSettings {
     const all = this.loadAll();
-    if (all[guildId]) return all[guildId];
+    if (all[guildId]) {
+      const settings = all[guildId];
+      let migrated = false;
+
+      const loggingRaw = settings.logging as unknown as Record<string, unknown>;
+      if ('channelId' in loggingRaw && !('userIds' in loggingRaw)) {
+        loggingRaw.userIds = [];
+        delete loggingRaw.channelId;
+        migrated = true;
+      }
+      if (!Array.isArray(loggingRaw.userIds)) {
+        loggingRaw.userIds = [];
+        migrated = true;
+      }
+
+      if (settings.ai.model === undefined) {
+        settings.ai.model = '';
+        migrated = true;
+      }
+      if (settings.ai.groqApiKey === undefined) {
+        settings.ai.groqApiKey = '';
+        migrated = true;
+      }
+      if (settings.ai.openaiApiKey === undefined) {
+        settings.ai.openaiApiKey = '';
+        migrated = true;
+      }
+
+      if (migrated) {
+        this.save(guildId, settings);
+      }
+
+      return settings;
+    }
 
     return {
       guildId,

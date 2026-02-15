@@ -6,12 +6,10 @@ export interface CurrencyRate {
 }
 
 export interface CurrencyRates {
-  usdUah: CurrencyRate;
-  eurUah: CurrencyRate;
-  plnUah: CurrencyRate;
+  rates: CurrencyRate[];
   updatedAt: Date;
 }
 
 export interface CurrencyProvider {
-  getRates(): Promise<CurrencyRates>;
+  getRates(currencies?: string[]): Promise<CurrencyRates>;
 }

@@ -24,15 +24,17 @@ export function formatRates(rates: CurrencyRates): string {
     minute: '2-digit',
   });
 
-  return [
+  const lines: string[] = [
     `💱 **Курсы валют** (${date}, ${time})`,
     '',
-    formatRate(rates.usdUah),
-    '',
-    formatRate(rates.eurUah),
-    '',
-    formatRate(rates.plnUah),
-    '',
-    '_Источник: Monobank_',
-  ].join('\n');
+  ];
+
+  for (const rate of rates.rates) {
+    lines.push(formatRate(rate));
+    lines.push('');
+  }
+
+  lines.push('_Источник: Monobank_');
+
+  return lines.join('\n');
 }

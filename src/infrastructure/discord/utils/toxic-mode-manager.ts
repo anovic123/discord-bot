@@ -1,7 +1,7 @@
 import { Client, TextChannel, EmbedBuilder } from 'discord.js';
 import { createLogger } from '../../logger';
 import { guildSettings } from '../../settings';
-import { getGroqApiKey, callGroq } from './groq';
+import { getAIApiKey, callAI } from './ai-provider';
 
 const logger = createLogger('ToxicMode');
 
@@ -86,10 +86,10 @@ class ToxicModeManager {
   }
 
   private async tick(guildId: string): Promise<void> {
-    const apiKey = getGroqApiKey();
-    if (!apiKey) return;
-
     const settings = guildSettings.getSettings(guildId);
+    const provider = settings.ai.provider;
+    const apiKey = getAIApiKey(provider, guildId);
+    if (!apiKey) return;
 
     if (!settings.toxicMode.enabled) {
       this.stopTimer(guildId);
@@ -132,7 +132,8 @@ class ToxicModeManager {
       combined += msg + '\n';
     }
 
-    const aiResponse = await callGroq(
+    const aiResponse = await callAI(
+      provider,
       apiKey,
       [
         { role: 'system', content: TOXIC_PROMPT },
@@ -141,7 +142,7 @@ class ToxicModeManager {
           content: `Пользователь: ${randomAuthor.displayName}\n\nЕго сообщения:\n${combined.trim()}`,
         },
       ],
-      { temperature: 0.9 }
+      { temperature: 0.9, model: settings.ai.model || undefined }
     );
 
     const count = this.incrementCounter(guildId);

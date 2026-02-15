@@ -5,9 +5,10 @@ export class ConverterService {
   private rates: Map<string, { buy: number; sell: number }> = new Map();
 
   updateRates(currencyRates: CurrencyRates): void {
-    this.setRate('USD', currencyRates.usdUah);
-    this.setRate('EUR', currencyRates.eurUah);
-    this.setRate('PLN', currencyRates.plnUah);
+    for (const rate of currencyRates.rates) {
+      const currency = rate.pair.split('/')[0];
+      this.setRate(currency, rate);
+    }
   }
 
   private setRate(currency: string, rate: CurrencyRate): void {

@@ -4,7 +4,7 @@ import {
   EmbedBuilder,
   TextChannel,
 } from 'discord.js';
-import { getGroqApiKey, callGroq } from '../utils/groq';
+import { getAIApiKey, callAI, getProviderLabel } from '../utils/ai-provider';
 import { logCommandError } from '../utils/error-handler';
 import { guildSettings } from '../../settings';
 import { aiRateLimiter } from '../utils/ai-rate-limiter';
@@ -21,21 +21,22 @@ export const roastCommand = new SlashCommandBuilder()
   );
 
 export async function handleRoastCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-  const apiKey = getGroqApiKey();
+  const guildId = interaction.guildId || '';
+  const settings = guildSettings.getSettings(guildId);
+  const provider = settings.ai.provider;
+  const apiKey = getAIApiKey(provider, guildId);
 
   if (!apiKey) {
+    const label = getProviderLabel(provider);
     const embed = new EmbedBuilder()
       .setColor(0xff9900)
       .setTitle('⚠️ AI недоступен')
-      .setDescription('API ключ Groq не настроен.\nДобавьте `GROQ_API_KEY` в переменные окружения.')
+      .setDescription(`API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`)
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
     return;
   }
-
-  const guildId = interaction.guildId || '';
-  const settings = guildSettings.getSettings(guildId);
 
   if (!settings.ai.roastEnabled) {
     await interaction.reply({
@@ -81,7 +82,8 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
   const messagesText = userMessages.join('\n').slice(0, MAX_CONTENT_LENGTH);
 
   try {
-    const roast = await callGroq(
+    const roast = await callAI(
+      provider,
       apiKey,
       [
         {
@@ -94,7 +96,7 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
           content: `Вот последние сообщения пользователя "${target.displayName}":\n\n${messagesText}`,
         },
       ],
-      { temperature: Math.max(0.5, settings.ai.temperature) }
+      { temperature: Math.max(0.5, settings.ai.temperature), model: settings.ai.model || undefined }
     );
 
     const embed = new EmbedBuilder()

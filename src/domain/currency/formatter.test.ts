@@ -5,9 +5,11 @@ import { CurrencyRates } from './types';
 describe('formatRates', () => {
   it('should format rates with buy/sell values', () => {
     const rates: CurrencyRates = {
-      usdUah: { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-      eurUah: { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
-      plnUah: { pair: 'PLN/UAH', buy: 10.0, sell: 10.5, cross: null },
+      rates: [
+        { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
+        { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
+        { pair: 'PLN/UAH', buy: 10.0, sell: 10.5, cross: null },
+      ],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 
@@ -24,9 +26,11 @@ describe('formatRates', () => {
 
   it('should format rates with cross values', () => {
     const rates: CurrencyRates = {
-      usdUah: { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-      eurUah: { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
-      plnUah: { pair: 'PLN/UAH', buy: null, sell: null, cross: 10.5 },
+      rates: [
+        { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
+        { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
+        { pair: 'PLN/UAH', buy: null, sell: null, cross: 10.5 },
+      ],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 
@@ -38,9 +42,11 @@ describe('formatRates', () => {
 
   it('should show unavailable message when no data', () => {
     const rates: CurrencyRates = {
-      usdUah: { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-      eurUah: { pair: 'EUR/UAH', buy: null, sell: null, cross: null },
-      plnUah: { pair: 'PLN/UAH', buy: 10.0, sell: 10.5, cross: null },
+      rates: [
+        { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
+        { pair: 'EUR/UAH', buy: null, sell: null, cross: null },
+        { pair: 'PLN/UAH', buy: 10.0, sell: 10.5, cross: null },
+      ],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 
@@ -51,14 +57,40 @@ describe('formatRates', () => {
 
   it('should format date and time correctly', () => {
     const rates: CurrencyRates = {
-      usdUah: { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-      eurUah: { pair: 'EUR/UAH', buy: 44.0, sell: 44.5, cross: null },
-      plnUah: { pair: 'PLN/UAH', buy: 10.0, sell: 10.5, cross: null },
+      rates: [
+        { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
+      ],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 
     const result = formatRates(rates);
 
     expect(result).toContain('2024');
+  });
+
+  it('should handle empty rates array', () => {
+    const rates: CurrencyRates = {
+      rates: [],
+      updatedAt: new Date('2024-01-15T10:30:00'),
+    };
+
+    const result = formatRates(rates);
+
+    expect(result).toContain('Курсы валют');
+    expect(result).toContain('Monobank');
+  });
+
+  it('should format single currency', () => {
+    const rates: CurrencyRates = {
+      rates: [
+        { pair: 'GBP/UAH', buy: 52.0, sell: 53.0, cross: null },
+      ],
+      updatedAt: new Date('2024-01-15T10:30:00'),
+    };
+
+    const result = formatRates(rates);
+
+    expect(result).toContain('GBP/UAH');
+    expect(result).toContain('52.00');
   });
 });
