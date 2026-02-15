@@ -16,7 +16,7 @@ describe('GuildSettingsManager', () => {
   afterEach(() => {
     try {
       fs.unlinkSync(tmpFile);
-    } catch {}
+    } catch { /* */ }
   });
 
   it('should return default ai and logging settings for a new guild', () => {

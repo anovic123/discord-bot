@@ -11,9 +11,6 @@ vi.mock('../../settings', () => ({
 import { aiRateLimiter } from './ai-rate-limiter';
 
 describe('AIRateLimiter', () => {
-  const guildId = 'guild-1';
-  const userId = 'user-1';
-
   beforeEach(() => {
     vi.restoreAllMocks();
   });

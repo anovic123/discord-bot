@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PermissionFlagsBits } from 'discord.js';
 import { isAdmin, isAdminCommand, requireAdmin, ADMIN_COMMANDS } from './permissions';
 
-function mockMember(isAdministrator: boolean) {
+type MockMember = { permissions: { has: ReturnType<typeof vi.fn> } };
+
+function mockMember(isAdministrator: boolean): MockMember {
   return {
     permissions: {
       has: vi.fn((flag: bigint) => {
@@ -21,18 +23,18 @@ function mockInteraction(isAdministrator: boolean) {
     interaction: {
       member: mockMember(isAdministrator),
       reply,
-    } as any,
+    } as unknown as Parameters<typeof requireAdmin>[0],
     reply,
   };
 }
 
 describe('isAdmin', () => {
   it('should return true for member with Administrator permission', () => {
-    expect(isAdmin(mockMember(true) as any)).toBe(true);
+    expect(isAdmin(mockMember(true) as unknown as Parameters<typeof isAdmin>[0])).toBe(true);
   });
 
   it('should return false for member without Administrator permission', () => {
-    expect(isAdmin(mockMember(false) as any)).toBe(false);
+    expect(isAdmin(mockMember(false) as unknown as Parameters<typeof isAdmin>[0])).toBe(false);
   });
 
   it('should return false for null member', () => {
@@ -80,7 +82,7 @@ describe('requireAdmin', () => {
 
   it('should return false when member is null (DM context)', async () => {
     const reply = vi.fn();
-    const interaction = { member: null, reply } as any;
+    const interaction = { member: null, reply } as unknown as Parameters<typeof requireAdmin>[0];
 
     const result = await requireAdmin(interaction);
 

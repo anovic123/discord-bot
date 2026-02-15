@@ -26,7 +26,7 @@ describe('AuditLogger', () => {
   afterEach(() => {
     try {
       fs.unlinkSync(tmpFile);
-    } catch {}
+    } catch { /* */ }
   });
 
   it('should add timestamp to log entries', () => {
