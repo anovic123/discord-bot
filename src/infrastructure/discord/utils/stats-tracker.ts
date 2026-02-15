@@ -1,4 +1,4 @@
-class StatsTracker {
+export class StatsTracker {
   private commandsExecuted: number = 0;
   private commandUsage: Map<string, number> = new Map();
   private lastCommandTime: Date | null = null;

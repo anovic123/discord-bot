@@ -107,7 +107,7 @@ const DEFAULT_SETTINGS: Omit<GuildSettings, 'guildId' | 'updatedAt' | 'updatedBy
   },
 };
 
-class GuildSettingsManager {
+export class GuildSettingsManager {
   private readonly filePath: string;
 
   constructor(filePath?: string) {

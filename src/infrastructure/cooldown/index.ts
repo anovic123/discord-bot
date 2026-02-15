@@ -22,7 +22,7 @@ const DEFAULT_CONFIG: CooldownConfig = {
 
 const COOLDOWN_CLEAN_TIME = 300000;
 
-class CooldownManager {
+export class CooldownManager {
   private userCooldowns: Map<string, CooldownEntry> = new Map();
   private config: CooldownConfig;
 

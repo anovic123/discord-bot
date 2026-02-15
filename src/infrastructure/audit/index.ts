@@ -17,7 +17,7 @@ export interface AuditEntry {
   details?: Record<string, unknown>;
 }
 
-class AuditLogger {
+export class AuditLogger {
   private readonly filePath: string;
   private buffer: AuditEntry[] = [];
   private readonly maxBufferSize = 10;

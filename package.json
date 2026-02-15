@@ -7,7 +7,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "vitest",
+    "test": "vitest run",
     "test:coverage": "vitest --coverage",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
@@ -29,7 +29,6 @@
   ],
   "author": "anovic123",
   "license": "MIT",
-  "description": "Powerful multi-purpose Discord bot with moderation, utilities, crypto/currency rates, weather, translations, polls, daily stats reports, welcome messages, guild settings, logging, AI rate limits, toxic-mode and 70 slash commands",
   "dependencies": {
     "axios": "^1.13.4",
     "discord.js": "^14.25.1",
