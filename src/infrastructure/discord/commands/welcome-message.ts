@@ -27,7 +27,14 @@ export const welcomeMessageCommand = new SlashCommandBuilder()
 
 function replaceVariables(
   text: string,
-  vars: { userId: string; username: string; server: string; memberCount: number; avatar: string; createdTimestamp: number }
+  vars: {
+    userId: string;
+    username: string;
+    server: string;
+    memberCount: number;
+    avatar: string;
+    createdTimestamp: number;
+  }
 ): string {
   return text
     .replace(/\{user\}/g, `<@${vars.userId}>`)
@@ -38,9 +45,17 @@ function replaceVariables(
     .replace(/\{createdAt\}/g, `<t:${vars.createdTimestamp}:R>`);
 }
 
-function buildPreviewEmbed(config: WelcomeMessageConfig, vars: {
-  userId: string; username: string; server: string; memberCount: number; avatar: string; createdTimestamp: number;
-}): EmbedBuilder {
+function buildPreviewEmbed(
+  config: WelcomeMessageConfig,
+  vars: {
+    userId: string;
+    username: string;
+    server: string;
+    memberCount: number;
+    avatar: string;
+    createdTimestamp: number;
+  }
+): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(config.color)
     .setTitle(replaceVariables(config.title, vars))
@@ -56,18 +71,20 @@ function buildSettingsEmbed(config: WelcomeMessageConfig): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(config.color)
     .setTitle('👋 Настройка приветствия')
-    .setDescription([
-      `**Статус:** ${status}`,
-      '',
-      `**Заголовок:** ${config.title}`,
-      `**Текст:** ${config.description}`,
-      `**Цвет:** ${colorHex}`,
-      '',
-      '**Переменные:**',
-      '`{user}` — упоминание · `{username}` — имя',
-      '`{server}` — сервер · `{memberCount}` — кол-во',
-      '`{avatar}` — аватар · `{createdAt}` — дата создания',
-    ].join('\n'))
+    .setDescription(
+      [
+        `**Статус:** ${status}`,
+        '',
+        `**Заголовок:** ${config.title}`,
+        `**Текст:** ${config.description}`,
+        `**Цвет:** ${colorHex}`,
+        '',
+        '**Переменные:**',
+        '`{user}` — упоминание · `{username}` — имя',
+        '`{server}` — сервер · `{memberCount}` — кол-во',
+        '`{avatar}` — аватар · `{createdAt}` — дата создания',
+      ].join('\n')
+    )
     .setTimestamp();
 }
 
@@ -88,7 +105,7 @@ function buildButtons(config: WelcomeMessageConfig): ActionRowBuilder<ButtonBuil
     new ButtonBuilder()
       .setCustomId('welcome_reset')
       .setLabel('🔄 Сбросить')
-      .setStyle(ButtonStyle.Secondary),
+      .setStyle(ButtonStyle.Secondary)
   );
 
   return [row1];
@@ -157,7 +174,7 @@ export async function handleWelcomeMessageButton(interaction: ButtonInteraction)
     modal.addComponents(
       new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
       new ActionRowBuilder<TextInputBuilder>().addComponents(descInput),
-      new ActionRowBuilder<TextInputBuilder>().addComponents(colorInput),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(colorInput)
     );
 
     await interaction.showModal(modal);
@@ -166,7 +183,11 @@ export async function handleWelcomeMessageButton(interaction: ButtonInteraction)
 
   if (customId === 'welcome_toggle') {
     const config = guildSettings.getWelcomeMessage(guildId);
-    const updated = guildSettings.setWelcomeMessage(guildId, { enabled: !config.enabled }, interaction.user.id);
+    const updated = guildSettings.setWelcomeMessage(
+      guildId,
+      { enabled: !config.enabled },
+      interaction.user.id
+    );
 
     await interaction.update({
       embeds: [buildSettingsEmbed(updated.welcomeMessage)],
@@ -195,7 +216,11 @@ export async function handleWelcomeMessageButton(interaction: ButtonInteraction)
   }
 
   if (customId === 'welcome_reset') {
-    const updated = guildSettings.setWelcomeMessage(guildId, { ...DEFAULT_CONFIG }, interaction.user.id);
+    const updated = guildSettings.setWelcomeMessage(
+      guildId,
+      { ...DEFAULT_CONFIG },
+      interaction.user.id
+    );
 
     await interaction.update({
       embeds: [buildSettingsEmbed(updated.welcomeMessage)],
@@ -205,7 +230,9 @@ export async function handleWelcomeMessageButton(interaction: ButtonInteraction)
   }
 }
 
-export async function handleWelcomeMessageModal(interaction: ModalSubmitInteraction): Promise<void> {
+export async function handleWelcomeMessageModal(
+  interaction: ModalSubmitInteraction
+): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
@@ -237,8 +264,16 @@ export async function handleWelcomeMessageModal(interaction: ModalSubmitInteract
   });
 }
 
-export function buildWelcomeEmbed(config: WelcomeMessageConfig, vars: {
-  userId: string; username: string; server: string; memberCount: number; avatar: string; createdTimestamp: number;
-}): EmbedBuilder {
+export function buildWelcomeEmbed(
+  config: WelcomeMessageConfig,
+  vars: {
+    userId: string;
+    username: string;
+    server: string;
+    memberCount: number;
+    avatar: string;
+    createdTimestamp: number;
+  }
+): EmbedBuilder {
   return buildPreviewEmbed(config, vars);
 }

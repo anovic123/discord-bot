@@ -94,29 +94,29 @@ describe('requireAdmin', () => {
 const COMMANDS_DIR = path.resolve(__dirname, '../commands');
 
 describe('Admin command handlers use requireAdmin', () => {
-  const commandFiles = fs.readdirSync(COMMANDS_DIR).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+  const commandFiles = fs
+    .readdirSync(COMMANDS_DIR)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
 
   for (const cmd of ADMIN_COMMANDS) {
     it(`${cmd} handler should call requireAdmin`, () => {
       const fileName = `${cmd}.ts`;
       const filePath = path.join(COMMANDS_DIR, fileName);
 
-      expect(
-        commandFiles.includes(fileName),
-        `Command file ${fileName} should exist`,
-      ).toBe(true);
+      expect(commandFiles.includes(fileName), `Command file ${fileName} should exist`).toBe(true);
 
       const source = fs.readFileSync(filePath, 'utf-8');
-      expect(
-        source.includes('requireAdmin'),
-        `${cmd} handler should call requireAdmin()`,
-      ).toBe(true);
+      expect(source.includes('requireAdmin'), `${cmd} handler should call requireAdmin()`).toBe(
+        true
+      );
     });
   }
 });
 
 describe('Non-admin command handlers should NOT call requireAdmin', () => {
-  const commandFiles = fs.readdirSync(COMMANDS_DIR).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+  const commandFiles = fs
+    .readdirSync(COMMANDS_DIR)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
 
   const adminSet = new Set<string>(ADMIN_COMMANDS);
 
@@ -129,7 +129,7 @@ describe('Non-admin command handlers should NOT call requireAdmin', () => {
       const source = fs.readFileSync(path.join(COMMANDS_DIR, `${cmd}.ts`), 'utf-8');
       expect(
         source.includes('requireAdmin'),
-        `${cmd} should not call requireAdmin — it's not an admin command`,
+        `${cmd} should not call requireAdmin — it's not an admin command`
       ).toBe(false);
     });
   }
@@ -159,7 +159,7 @@ describe('Admin commands with setDefaultMemberPermissions', () => {
       const source = fs.readFileSync(path.join(COMMANDS_DIR, `${cmd}.ts`), 'utf-8');
       expect(
         source.includes('requireAdmin'),
-        `${cmd} has no setDefaultMemberPermissions, so it must use requireAdmin`,
+        `${cmd} has no setDefaultMemberPermissions, so it must use requireAdmin`
       ).toBe(true);
     }
   });

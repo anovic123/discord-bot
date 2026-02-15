@@ -8,7 +8,9 @@ describe('AuditLogger', () => {
   let tmpFile: string;
   let logger: AuditLogger;
 
-  function createEntry(overrides: Partial<Omit<AuditEntry, 'timestamp'>> = {}): Omit<AuditEntry, 'timestamp'> {
+  function createEntry(
+    overrides: Partial<Omit<AuditEntry, 'timestamp'>> = {}
+  ): Omit<AuditEntry, 'timestamp'> {
     return {
       action: 'ban',
       moderatorId: 'mod-1',
@@ -26,7 +28,9 @@ describe('AuditLogger', () => {
   afterEach(() => {
     try {
       fs.unlinkSync(tmpFile);
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
   });
 
   it('should add timestamp to log entries', () => {

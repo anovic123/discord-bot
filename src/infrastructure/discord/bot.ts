@@ -196,27 +196,36 @@ export class DiscordBot {
     this.client.on('guildMemberRemove', (member) => {
       const settings = guildSettings.getSettings(member.guild.id);
       if (!settings.logging.channelId || !settings.logging.memberJoinLeave) return;
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(0xff4444)
-        .setTitle('👋 Участник покинул сервер')
-        .setDescription(`**${member.user?.tag || 'Неизвестный'}** (${member.id})`)
-        .setThumbnail(member.displayAvatarURL())
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(0xff4444)
+          .setTitle('👋 Участник покинул сервер')
+          .setDescription(`**${member.user?.tag || 'Неизвестный'}** (${member.id})`)
+          .setThumbnail(member.displayAvatarURL())
+          .setTimestamp()
+      );
     });
 
     this.client.on('messageDelete', (message) => {
       if (!message.guildId || message.author?.bot) return;
       const settings = guildSettings.getSettings(message.guildId);
       if (!settings.logging.channelId || !settings.logging.messageDelete) return;
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(0xff4444)
-        .setTitle('🗑️ Сообщение удалено')
-        .addFields(
-          { name: 'Автор', value: message.author?.tag || 'Неизвестный', inline: true },
-          { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
-          { name: 'Содержимое', value: message.content?.slice(0, 1024) || '*Нет текста / не кешировано*' },
-        )
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(0xff4444)
+          .setTitle('🗑️ Сообщение удалено')
+          .addFields(
+            { name: 'Автор', value: message.author?.tag || 'Неизвестный', inline: true },
+            { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
+            {
+              name: 'Содержимое',
+              value: message.content?.slice(0, 1024) || '*Нет текста / не кешировано*',
+            }
+          )
+          .setTimestamp()
+      );
     });
 
     this.client.on('messageUpdate', (oldMessage, newMessage) => {
@@ -224,31 +233,37 @@ export class DiscordBot {
       if (oldMessage.content === newMessage.content) return;
       const settings = guildSettings.getSettings(newMessage.guildId);
       if (!settings.logging.channelId || !settings.logging.messageEdit) return;
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(0xffaa00)
-        .setTitle('✏️ Сообщение отредактировано')
-        .addFields(
-          { name: 'Автор', value: newMessage.author?.tag || 'Неизвестный', inline: true },
-          { name: 'Канал', value: `<#${newMessage.channelId}>`, inline: true },
-          { name: 'Было', value: oldMessage.content?.slice(0, 512) || '*Не кешировано*' },
-          { name: 'Стало', value: newMessage.content?.slice(0, 512) || '*Пусто*' },
-        )
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(0xffaa00)
+          .setTitle('✏️ Сообщение отредактировано')
+          .addFields(
+            { name: 'Автор', value: newMessage.author?.tag || 'Неизвестный', inline: true },
+            { name: 'Канал', value: `<#${newMessage.channelId}>`, inline: true },
+            { name: 'Было', value: oldMessage.content?.slice(0, 512) || '*Не кешировано*' },
+            { name: 'Стало', value: newMessage.content?.slice(0, 512) || '*Пусто*' }
+          )
+          .setTimestamp()
+      );
     });
 
     this.client.on('guildMemberUpdate', (oldMember, newMember) => {
       if (oldMember.nickname === newMember.nickname) return;
       const settings = guildSettings.getSettings(newMember.guild.id);
       if (!settings.logging.channelId || !settings.logging.nicknameChanges) return;
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(0x5865f2)
-        .setTitle('📛 Смена никнейма')
-        .addFields(
-          { name: 'Участник', value: newMember.user.tag, inline: true },
-          { name: 'Было', value: oldMember.nickname || '*Без никнейма*', inline: true },
-          { name: 'Стало', value: newMember.nickname || '*Без никнейма*', inline: true },
-        )
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(0x5865f2)
+          .setTitle('📛 Смена никнейма')
+          .addFields(
+            { name: 'Участник', value: newMember.user.tag, inline: true },
+            { name: 'Было', value: oldMember.nickname || '*Без никнейма*', inline: true },
+            { name: 'Стало', value: newMember.nickname || '*Без никнейма*', inline: true }
+          )
+          .setTimestamp()
+      );
     });
 
     this.client.on('voiceStateUpdate', (oldState, newState) => {
@@ -271,7 +286,11 @@ export class DiscordBot {
         title = '🔇 Отключился от голосового';
         description = `**${member.user.tag}** вышел из <#${oldState.channelId}>`;
         color = 0xff4444;
-      } else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+      } else if (
+        oldState.channelId &&
+        newState.channelId &&
+        oldState.channelId !== newState.channelId
+      ) {
         title = '🔀 Переместился между каналами';
         description = `**${member.user.tag}**: <#${oldState.channelId}> → <#${newState.channelId}>`;
         color = 0xffaa00;
@@ -279,11 +298,14 @@ export class DiscordBot {
         return;
       }
 
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(color)
-        .setTitle(title)
-        .setDescription(description)
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(color)
+          .setTitle(title)
+          .setDescription(description)
+          .setTimestamp()
+      );
     });
 
     this.client.on('interactionCreate', async (interaction) => {
@@ -332,7 +354,10 @@ export class DiscordBot {
         return;
       }
 
-      if (interaction.isChannelSelectMenu() && interaction.customId.startsWith('settings_channel_')) {
+      if (
+        interaction.isChannelSelectMenu() &&
+        interaction.customId.startsWith('settings_channel_')
+      ) {
         try {
           await handleSettingsChannelSelect(interaction);
         } catch (error) {
@@ -734,12 +759,8 @@ export class DiscordBot {
       const settings = guildSettings.getSettings(this.config.guildId);
 
       const [currencyMessage, cryptoMessage] = await Promise.all([
-        settings.dailyReport.currencyRates
-          ? this.useCases.getRates.executeWithGreeting()
-          : null,
-        settings.dailyReport.cryptoRates
-          ? this.useCases.getCrypto.execute()
-          : null,
+        settings.dailyReport.currencyRates ? this.useCases.getRates.executeWithGreeting() : null,
+        settings.dailyReport.cryptoRates ? this.useCases.getCrypto.execute() : null,
       ]);
 
       if (currencyMessage) await channel.send(currencyMessage);
@@ -871,12 +892,15 @@ export class DiscordBot {
     const settings = guildSettings.getSettings(member.guild.id);
 
     if (settings.logging.channelId && settings.logging.memberJoinLeave) {
-      this.sendLogEmbed(settings.logging.channelId, new EmbedBuilder()
-        .setColor(0x57f287)
-        .setTitle('📥 Новый участник')
-        .setDescription(`**${member.user.tag}** (${member.id}) присоединился к серверу`)
-        .setThumbnail(member.displayAvatarURL())
-        .setTimestamp());
+      this.sendLogEmbed(
+        settings.logging.channelId,
+        new EmbedBuilder()
+          .setColor(0x57f287)
+          .setTitle('📥 Новый участник')
+          .setDescription(`**${member.user.tag}** (${member.id}) присоединился к серверу`)
+          .setThumbnail(member.displayAvatarURL())
+          .setTimestamp()
+      );
     }
 
     if (!this.config.welcomeChannelId) return;
@@ -887,7 +911,9 @@ export class DiscordBot {
       try {
         channel = await this.client.channels.fetch(this.config.welcomeChannelId);
       } catch {
-        logger.warn(`Welcome message skipped: channel ${this.config.welcomeChannelId} not accessible`);
+        logger.warn(
+          `Welcome message skipped: channel ${this.config.welcomeChannelId} not accessible`
+        );
         return;
       }
 
@@ -913,12 +939,13 @@ export class DiscordBot {
   }
 
   private sendLogEmbed(channelId: string, embed: EmbedBuilder): void {
-    this.client.channels.fetch(channelId)
+    this.client.channels
+      .fetch(channelId)
       .then((channel) => {
         if (channel instanceof TextChannel) {
-          channel.send({ embeds: [embed] }).catch((err) =>
-            logger.error('Failed to send log embed', err)
-          );
+          channel
+            .send({ embeds: [embed] })
+            .catch((err) => logger.error('Failed to send log embed', err));
         }
       })
       .catch((err) => logger.error('Failed to fetch log channel', err));

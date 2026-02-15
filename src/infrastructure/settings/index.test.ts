@@ -16,7 +16,9 @@ describe('GuildSettingsManager', () => {
   afterEach(() => {
     try {
       fs.unlinkSync(tmpFile);
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
   });
 
   it('should return default ai and logging settings for a new guild', () => {
@@ -28,11 +30,7 @@ describe('GuildSettingsManager', () => {
   });
 
   it('should merge ai partial update correctly', () => {
-    const updated = manager.updateSettings(
-      'guild-1',
-      { ai: { maxRequestsPerDay: 100 } },
-      'admin',
-    );
+    const updated = manager.updateSettings('guild-1', { ai: { maxRequestsPerDay: 100 } }, 'admin');
 
     expect(updated.ai.maxRequestsPerDay).toBe(100);
     expect(updated.ai.askEnabled).toBe(true);
@@ -43,7 +41,7 @@ describe('GuildSettingsManager', () => {
     const updated = manager.updateSettings(
       'guild-2',
       { logging: { channelId: '123456', messageDelete: false } },
-      'admin',
+      'admin'
     );
 
     expect(updated.logging.channelId).toBe('123456');
@@ -54,11 +52,7 @@ describe('GuildSettingsManager', () => {
 
   it('should not overwrite other category fields on partial update', () => {
     manager.updateSettings('guild-3', { ai: { cooldownSeconds: 30 } }, 'admin');
-    const updated = manager.updateSettings(
-      'guild-3',
-      { logging: { channelId: '999' } },
-      'admin',
-    );
+    const updated = manager.updateSettings('guild-3', { logging: { channelId: '999' } }, 'admin');
 
     expect(updated.ai.cooldownSeconds).toBe(30);
     expect(updated.logging.channelId).toBe('999');

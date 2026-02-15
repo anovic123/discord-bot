@@ -70,7 +70,10 @@ export async function handleAiSummaryCommand(
   const aiSettings = guildSettings.getSettings(guildId);
 
   if (!aiSettings.ai.aiSummaryEnabled) {
-    await interaction.reply({ content: '❌ Команда /ai-summary отключена в настройках.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Команда /ai-summary отключена в настройках.',
+      ephemeral: true,
+    });
     return;
   }
 

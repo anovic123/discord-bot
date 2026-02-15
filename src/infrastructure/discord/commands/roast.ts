@@ -38,7 +38,10 @@ export async function handleRoastCommand(interaction: ChatInputCommandInteractio
   const settings = guildSettings.getSettings(guildId);
 
   if (!settings.ai.roastEnabled) {
-    await interaction.reply({ content: '❌ Команда /roast отключена в настройках.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Команда /roast отключена в настройках.',
+      ephemeral: true,
+    });
     return;
   }
 

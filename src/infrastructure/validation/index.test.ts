@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  sanitizeString,
-  discordIdSchema,
-  hexColorSchema,
-  validate,
-  numberInRange,
-} from './index';
+import { sanitizeString, discordIdSchema, hexColorSchema, validate, numberInRange } from './index';
 
 describe('sanitizeString', () => {
   it('should remove < and > characters', () => {

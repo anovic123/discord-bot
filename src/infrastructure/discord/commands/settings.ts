@@ -205,7 +205,7 @@ function buildCategoryComponents(
         new ButtonBuilder()
           .setCustomId(`settings_inc_${category}_${key}`)
           .setLabel('➕')
-          .setStyle(ButtonStyle.Secondary),
+          .setStyle(ButtonStyle.Secondary)
       );
       numericRows.push(numRow);
       continue;
@@ -221,9 +221,7 @@ function buildCategoryComponents(
   }
 
   for (let i = 0; i < toggleButtons.length; i += 5) {
-    rows.push(
-      new ActionRowBuilder<ButtonBuilder>().addComponents(toggleButtons.slice(i, i + 5))
-    );
+    rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(toggleButtons.slice(i, i + 5)));
   }
 
   rows.push(...numericRows);

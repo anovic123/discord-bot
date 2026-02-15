@@ -42,13 +42,13 @@ class ToxicModeManager {
     const intervalMs = settings.toxicMode.frequencyMinutes * 60 * 1000;
 
     const timer = setInterval(() => {
-      this.tick(guildId).catch((err) =>
-        logger.error(`Toxic mode tick error [${guildId}]`, err)
-      );
+      this.tick(guildId).catch((err) => logger.error(`Toxic mode tick error [${guildId}]`, err));
     }, intervalMs);
 
     this.timers.set(guildId, timer);
-    logger.info(`Toxic mode timer started for guild ${guildId} (every ${settings.toxicMode.frequencyMinutes}min)`);
+    logger.info(
+      `Toxic mode timer started for guild ${guildId} (every ${settings.toxicMode.frequencyMinutes}min)`
+    );
   }
 
   stopTimer(guildId: string): void {
@@ -132,10 +132,17 @@ class ToxicModeManager {
       combined += msg + '\n';
     }
 
-    const aiResponse = await callGroq(apiKey, [
-      { role: 'system', content: TOXIC_PROMPT },
-      { role: 'user', content: `Пользователь: ${randomAuthor.displayName}\n\nЕго сообщения:\n${combined.trim()}` },
-    ], { temperature: 0.9 });
+    const aiResponse = await callGroq(
+      apiKey,
+      [
+        { role: 'system', content: TOXIC_PROMPT },
+        {
+          role: 'user',
+          content: `Пользователь: ${randomAuthor.displayName}\n\nЕго сообщения:\n${combined.trim()}`,
+        },
+      ],
+      { temperature: 0.9 }
+    );
 
     const count = this.incrementCounter(guildId);
     const remaining = settings.toxicMode.maxPerDay - count;

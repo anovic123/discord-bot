@@ -50,7 +50,7 @@ function buildButtons(settings: ToxicModeSettings): ActionRowBuilder<ButtonBuild
     new ButtonBuilder()
       .setCustomId('toxic_channel')
       .setLabel('📌 Этот канал')
-      .setStyle(ButtonStyle.Primary),
+      .setStyle(ButtonStyle.Primary)
   );
 
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -78,7 +78,7 @@ function buildButtons(settings: ToxicModeSettings): ActionRowBuilder<ButtonBuild
       .setCustomId('toxic_limit_up')
       .setLabel('➕ Лимит')
       .setStyle(ButtonStyle.Secondary)
-      .setDisabled(settings.maxPerDay >= LIMIT_MAX),
+      .setDisabled(settings.maxPerDay >= LIMIT_MAX)
   );
 
   return [row1, row2];
@@ -115,9 +115,13 @@ export async function handleToxicModeButton(interaction: ButtonInteraction): Pro
 
   if (customId === 'toxic_toggle') {
     const newEnabled = !current.enabled;
-    const updated = guildSettings.updateSettings(guildId, {
-      toxicMode: { enabled: newEnabled },
-    }, interaction.user.id);
+    const updated = guildSettings.updateSettings(
+      guildId,
+      {
+        toxicMode: { enabled: newEnabled },
+      },
+      interaction.user.id
+    );
 
     if (newEnabled && updated.toxicMode.channelId) {
       toxicModeManager.startTimer(guildId);
@@ -133,9 +137,13 @@ export async function handleToxicModeButton(interaction: ButtonInteraction): Pro
   }
 
   if (customId === 'toxic_channel') {
-    const updated = guildSettings.updateSettings(guildId, {
-      toxicMode: { channelId: interaction.channelId },
-    }, interaction.user.id);
+    const updated = guildSettings.updateSettings(
+      guildId,
+      {
+        toxicMode: { channelId: interaction.channelId },
+      },
+      interaction.user.id
+    );
 
     if (updated.toxicMode.enabled) {
       toxicModeManager.restartTimer(guildId);
@@ -150,13 +158,18 @@ export async function handleToxicModeButton(interaction: ButtonInteraction): Pro
 
   if (customId === 'toxic_freq_down' || customId === 'toxic_freq_up') {
     const currentIndex = FREQUENCIES.indexOf(current.frequencyMinutes);
-    const newIndex = customId === 'toxic_freq_down'
-      ? Math.max(0, currentIndex - 1)
-      : Math.min(FREQUENCIES.length - 1, currentIndex + 1);
+    const newIndex =
+      customId === 'toxic_freq_down'
+        ? Math.max(0, currentIndex - 1)
+        : Math.min(FREQUENCIES.length - 1, currentIndex + 1);
 
-    const updated = guildSettings.updateSettings(guildId, {
-      toxicMode: { frequencyMinutes: FREQUENCIES[newIndex] },
-    }, interaction.user.id);
+    const updated = guildSettings.updateSettings(
+      guildId,
+      {
+        toxicMode: { frequencyMinutes: FREQUENCIES[newIndex] },
+      },
+      interaction.user.id
+    );
 
     if (updated.toxicMode.enabled && updated.toxicMode.channelId) {
       toxicModeManager.restartTimer(guildId);
@@ -170,13 +183,18 @@ export async function handleToxicModeButton(interaction: ButtonInteraction): Pro
   }
 
   if (customId === 'toxic_limit_down' || customId === 'toxic_limit_up') {
-    const newLimit = customId === 'toxic_limit_down'
-      ? Math.max(LIMIT_MIN, current.maxPerDay - LIMIT_STEP)
-      : Math.min(LIMIT_MAX, current.maxPerDay + LIMIT_STEP);
+    const newLimit =
+      customId === 'toxic_limit_down'
+        ? Math.max(LIMIT_MIN, current.maxPerDay - LIMIT_STEP)
+        : Math.min(LIMIT_MAX, current.maxPerDay + LIMIT_STEP);
 
-    const updated = guildSettings.updateSettings(guildId, {
-      toxicMode: { maxPerDay: newLimit },
-    }, interaction.user.id);
+    const updated = guildSettings.updateSettings(
+      guildId,
+      {
+        toxicMode: { maxPerDay: newLimit },
+      },
+      interaction.user.id
+    );
 
     await interaction.update({
       embeds: [buildSettingsEmbed(updated.toxicMode, guildId)],

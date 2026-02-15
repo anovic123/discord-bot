@@ -180,7 +180,11 @@ export class GuildSettingsManager {
     return this.getSettings(guildId).welcomeMessage;
   }
 
-  setWelcomeMessage(guildId: string, config: Partial<WelcomeMessageConfig>, userId: string): GuildSettings {
+  setWelcomeMessage(
+    guildId: string,
+    config: Partial<WelcomeMessageConfig>,
+    userId: string
+  ): GuildSettings {
     return this.updateSettings(guildId, { welcomeMessage: config }, userId);
   }
 

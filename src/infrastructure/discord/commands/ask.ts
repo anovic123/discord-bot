@@ -29,7 +29,10 @@ export async function handleAskCommand(interaction: ChatInputCommandInteraction)
   const settings = guildSettings.getSettings(guildId);
 
   if (!settings.ai.askEnabled) {
-    await interaction.reply({ content: '❌ Команда /ask отключена в настройках.', ephemeral: true });
+    await interaction.reply({
+      content: '❌ Команда /ask отключена в настройках.',
+      ephemeral: true,
+    });
     return;
   }
 
