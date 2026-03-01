@@ -80,11 +80,7 @@ describe('GuildSettingsManager', () => {
 
   it('should not overwrite other category fields on partial update', () => {
     manager.updateSettings('guild-3', { ai: { cooldownSeconds: 30 } }, 'admin');
-    const updated = manager.updateSettings(
-      'guild-3',
-      { logging: { userIds: ['999'] } },
-      'admin'
-    );
+    const updated = manager.updateSettings('guild-3', { logging: { userIds: ['999'] } }, 'admin');
 
     expect(updated.ai.cooldownSeconds).toBe(30);
     expect(updated.logging.userIds).toEqual(['999']);
@@ -95,17 +91,30 @@ describe('GuildSettingsManager', () => {
     const legacySettings = {
       'legacy-guild': {
         guildId: 'legacy-guild',
-        dailyReport: { currencyRates: false, cryptoRates: false, serverStats: false, currencies: ['USD'] },
+        dailyReport: {
+          currencyRates: false,
+          cryptoRates: false,
+          serverStats: false,
+          currencies: ['USD'],
+        },
         welcome: { startupMessage: false, welcomeMessage: false },
         moderation: { auditLog: true },
         ai: {
-          askEnabled: true, roastEnabled: true, aiSummaryEnabled: true,
-          maxRequestsPerDay: 50, cooldownSeconds: 10, temperature: 0.7, provider: 'groq',
+          askEnabled: true,
+          roastEnabled: true,
+          aiSummaryEnabled: true,
+          maxRequestsPerDay: 50,
+          cooldownSeconds: 10,
+          temperature: 0.7,
+          provider: 'groq',
         },
         logging: {
           channelId: '123456',
-          messageDelete: true, messageEdit: true, memberJoinLeave: true,
-          nicknameChanges: true, voiceActivity: true,
+          messageDelete: true,
+          messageEdit: true,
+          memberJoinLeave: true,
+          nicknameChanges: true,
+          voiceActivity: true,
         },
         welcomeMessage: { enabled: true, title: 'Test', description: 'Test', color: 0x57f287 },
         toxicMode: { enabled: false, channelId: '', frequencyMinutes: 15, maxPerDay: 20 },

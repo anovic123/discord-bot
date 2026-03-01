@@ -57,9 +57,7 @@ describe('formatRates', () => {
 
   it('should format date and time correctly', () => {
     const rates: CurrencyRates = {
-      rates: [
-        { pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null },
-      ],
+      rates: [{ pair: 'USD/UAH', buy: 41.0, sell: 41.5, cross: null }],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 
@@ -82,9 +80,7 @@ describe('formatRates', () => {
 
   it('should format single currency', () => {
     const rates: CurrencyRates = {
-      rates: [
-        { pair: 'GBP/UAH', buy: 52.0, sell: 53.0, cross: null },
-      ],
+      rates: [{ pair: 'GBP/UAH', buy: 52.0, sell: 53.0, cross: null }],
       updatedAt: new Date('2024-01-15T10:30:00'),
     };
 

@@ -24,10 +24,7 @@ export function formatRates(rates: CurrencyRates): string {
     minute: '2-digit',
   });
 
-  const lines: string[] = [
-    `💱 **Курсы валют** (${date}, ${time})`,
-    '',
-  ];
+  const lines: string[] = [`💱 **Курсы валют** (${date}, ${time})`, ''];
 
   for (const rate of rates.rates) {
     lines.push(formatRate(rate));

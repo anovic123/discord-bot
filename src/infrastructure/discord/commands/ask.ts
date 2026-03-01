@@ -22,7 +22,9 @@ export async function handleAskCommand(interaction: ChatInputCommandInteraction)
     const embed = new EmbedBuilder()
       .setColor(0xff9900)
       .setTitle('⚠️ AI недоступен')
-      .setDescription(`API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`)
+      .setDescription(
+        `API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`
+      )
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });

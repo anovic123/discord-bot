@@ -22,7 +22,9 @@ export function getAIApiKey(provider: AIProviderType, guildId?: string): string 
     if (encryptedKey) {
       try {
         return decrypt(encryptedKey);
-      } catch (error) {console.error(error)}
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 

@@ -130,8 +130,7 @@ function buildOverviewEmbed(settings: GuildSettings, search?: string): EmbedBuil
 
     if (category === 'logging' && (!query || 'получатели'.includes(query))) {
       const userIds = settings.logging.userIds;
-      const val =
-        userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
+      const val = userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
       matchedLines.push(`👤 Получатели логов: ${val}`);
     }
 
@@ -206,8 +205,7 @@ function buildCategoryEmbed(settings: GuildSettings, category: string): EmbedBui
 
   if (category === 'logging') {
     const userIds = settings.logging.userIds;
-    const val =
-      userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
+    const val = userIds.length > 0 ? userIds.map((id) => `<@${id}>`).join(', ') : '❌ Не заданы';
     lines.push(`👤 Получатели логов: ${val}`);
   }
 
@@ -391,9 +389,7 @@ export async function handleSettingsButton(interaction: ButtonInteraction): Prom
   }
 
   if (customId === 'settings_ai_apikey') {
-    const modal = new ModalBuilder()
-      .setCustomId('settings_modal_apikey')
-      .setTitle('🔑 API ключи');
+    const modal = new ModalBuilder().setCustomId('settings_modal_apikey').setTitle('🔑 API ключи');
 
     const groqInput = new TextInputBuilder()
       .setCustomId('groq_key')
@@ -532,11 +528,7 @@ export async function handleSettingsSelectMenu(
 
   if (interaction.customId === 'settings_ai_model') {
     const model = interaction.values[0];
-    const settings = guildSettings.updateSettings(
-      guildId,
-      { ai: { model } },
-      interaction.user.id
-    );
+    const settings = guildSettings.updateSettings(guildId, { ai: { model } }, interaction.user.id);
 
     await interaction.update({
       embeds: [buildCategoryEmbed(settings, 'ai')],

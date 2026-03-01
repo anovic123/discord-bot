@@ -63,7 +63,9 @@ export async function handleAiSummaryCommand(
     const embed = new EmbedBuilder()
       .setColor(0xff9900)
       .setTitle('⚠️ AI-выжимка недоступна')
-      .setDescription(`API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`)
+      .setDescription(
+        `API ключ ${label} не настроен.\nДобавьте соответствующий ключ в переменные окружения.`
+      )
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], ephemeral: true });

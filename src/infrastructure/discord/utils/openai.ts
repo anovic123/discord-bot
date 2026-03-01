@@ -6,11 +6,7 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MAX_TOKENS = 1024;
 const DEFAULT_TEMPERATURE = 0.3;
 
-export const OPENAI_MODELS = [
-  'gpt-4o-mini',
-  'gpt-4o',
-  'gpt-3.5-turbo',
-] as const;
+export const OPENAI_MODELS = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'] as const;
 
 export const DEFAULT_OPENAI_MODEL = OPENAI_MODELS[0];
 

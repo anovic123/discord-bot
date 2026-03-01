@@ -117,6 +117,7 @@ import { guildSettings } from '../settings';
 import { statsTracker } from './utils/stats-tracker';
 import { setServerStatsProvider } from '../health';
 import { toxicModeManager } from './utils/toxic-mode-manager';
+import { attachmentCache, type CachedAttachment } from '../attachment-cache';
 
 interface UseCases {
   getRates: GetRatesUseCase;
@@ -209,25 +210,71 @@ export class DiscordBot {
       );
     });
 
+    this.client.on('messageCreate', (message) => {
+      if (!message.guildId || message.author.bot) return;
+      if (message.attachments.size === 0) return;
+      const cached: CachedAttachment[] = message.attachments.map((a) => ({
+        name: a.name,
+        url: a.url,
+        proxyURL: a.proxyURL,
+        contentType: a.contentType,
+        size: a.size,
+      }));
+      attachmentCache.set(message.id, {
+        attachments: cached,
+        authorTag: message.author.tag,
+        timestamp: Date.now(),
+      });
+    });
+
     this.client.on('messageDelete', (message) => {
       if (!message.guildId || message.author?.bot) return;
       const settings = guildSettings.getSettings(message.guildId);
       if (settings.logging.userIds.length === 0 || !settings.logging.messageDelete) return;
-      this.sendLogEmbed(
-        settings.logging.userIds,
-        new EmbedBuilder()
-          .setColor(0xff4444)
-          .setTitle('🗑️ Сообщение удалено')
-          .addFields(
-            { name: 'Автор', value: message.author?.tag || 'Неизвестный', inline: true },
-            { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
-            {
-              name: 'Содержимое',
-              value: message.content?.slice(0, 1024) || '*Нет текста / не кешировано*',
-            }
-          )
-          .setTimestamp()
-      );
+
+      const cachedEntry = attachmentCache.get(message.id);
+      const attachments: CachedAttachment[] =
+        cachedEntry?.attachments ??
+        (message.attachments?.size
+          ? message.attachments.map((a) => ({
+              name: a.name,
+              url: a.url,
+              proxyURL: a.proxyURL,
+              contentType: a.contentType,
+              size: a.size,
+            }))
+          : []);
+
+      const embed = new EmbedBuilder()
+        .setColor(0xff4444)
+        .setTitle('🗑️ Сообщение удалено')
+        .addFields(
+          { name: 'Автор', value: message.author?.tag || cachedEntry?.authorTag || 'Неизвестный', inline: true },
+          { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
+          {
+            name: 'Содержимое',
+            value: message.content?.slice(0, 1024) || '*Нет текста*',
+          }
+        )
+        .setTimestamp();
+
+      if (attachments.length > 0) {
+        const list = attachments
+          .map((a) => {
+            const sizeMB = (a.size / 1024 / 1024).toFixed(2);
+            return `[${a.name}](${a.proxyURL}) (${sizeMB} MB)`;
+          })
+          .join('\n');
+        embed.addFields({ name: `📎 Вложения (${attachments.length})`, value: list.slice(0, 1024) });
+
+        const firstImage = attachments.find((a) => a.contentType?.startsWith('image/'));
+        if (firstImage) {
+          embed.setImage(firstImage.proxyURL);
+        }
+      }
+
+      attachmentCache.delete(message.id);
+      this.sendLogEmbed(settings.logging.userIds, embed);
     });
 
     this.client.on('messageUpdate', (oldMessage, newMessage) => {
@@ -379,10 +426,7 @@ export class DiscordBot {
         return;
       }
 
-      if (
-        interaction.isUserSelectMenu() &&
-        interaction.customId === 'settings_log_users'
-      ) {
+      if (interaction.isUserSelectMenu() && interaction.customId === 'settings_log_users') {
         try {
           await handleSettingsUserSelect(interaction);
         } catch (error) {
